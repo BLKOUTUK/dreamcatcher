@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dreamcatcher Council</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #0f172a; color: #f8fafc; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="glass max-w-2xl w-full p-8 rounded-2xl shadow-2xl border border-slate-700">
+        <h1 class="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">Dreamcatcher</h1>
+        <p class="text-slate-400 mb-8">Consult the Council of LLMs on your next big idea by submitting a URL.</p>
+
+        <textarea id="prompt" class="w-full h-32 bg-slate-900 border border-slate-700 rounded-xl p-4 text-white focus:ring-2 focus:ring-blue-500 outline-none mb-4" placeholder="Enter the URL of the tool or resource to evaluate..."></textarea>
+
+        <button onclick="askCouncil()" id="askBtn" class="w-full bg-blue-600 hover:bg-blue-500 transition p-4 rounded-xl font-bold">Summon the Council</button>
+
+        <div id="response" class="mt-8 space-y-4 hidden">
+            <h3 class="text-xl font-semibold border-b border-slate-700 pb-2">The Council's Decree:</h3>
+            <div id="resultText" class="text-slate-300 italic whitespace-pre-wrap"></div>
+        </div>
+    </div>
+
+    <script>
+        async function askCouncil() {
+            const prompt = document.getElementById('prompt').value.trim();
+            const btn = document.getElementById('askBtn');
+            const responseDiv = document.getElementById('response');
+            const resultText = document.getElementById('resultText');
+
+            if (!prompt) {
+                resultText.innerText = 'Please enter a URL or description before consulting the council.';
+                responseDiv.classList.remove('hidden');
+                return;
+            }
+
+            btn.innerText = 'Consulting...';
+            btn.disabled = true;
+            resultText.innerText = '';
+
+            try {
+                const res = await fetch('/evaluate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: prompt }),
+                });
+
+                if (!res.ok) {
+                    const error = await res.json();
+                    throw new Error(error.detail || 'Unexpected error');
+                }
+
+                const data = await res.json();
+                responseDiv.classList.remove('hidden');
+                resultText.innerText = `Skeptic:\n${data.skeptic}\n\nEthicist:\n${data.ethicist}\n\nBuilder:\n${data.builder}\n\nVerdict: ${data.verdict}`;
+            } catch (err) {
+                responseDiv.classList.remove('hidden');
+                resultText.innerText = `Request failed: ${err.message}`;
+            } finally {
+                btn.innerText = 'Summon the Council';
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

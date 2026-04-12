@@ -1,3 +1,11 @@
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+
+# Template renderer
+templates = Jinja2Templates(directory="templates")
+
 """
 main.py — Dreamcatcher API
 
@@ -56,6 +64,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/", response_class=HTMLResponse)
+async def get_ui(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
 
 # ---------------------------------------------------------------------------
 # Request / Response schemas
@@ -88,7 +100,7 @@ class EvaluateResponse(BaseModel):
 # Endpoints
 # ---------------------------------------------------------------------------
 
-@app.get("/", tags=["health"])
+@app.get("/health", tags=["health"])
 async def health_check():
     """Simple health check — confirms the service is running."""
     return {"status": "ok", "service": "dreamcatcher"}
