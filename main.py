@@ -26,11 +26,18 @@ from pydantic import BaseModel, HttpUrl
 load_dotenv()
 
 from council import (
+    COUNCIL_MODEL,
     builder,
     derive_verdict,
     ethicist,
     extract_recommendation,
     skeptic,
+)
+from verdicts import (
+    get_verdict,
+    list_verdicts,
+    save_verdict,
+    verdict_counts,
 )
 from wishlist import Wishlist, load_wishlist, save_wishlist
 
@@ -184,14 +191,19 @@ async def post_wishlist(
 
 class EvaluateRequest(BaseModel):
     url: HttpUrl
+    submitted_by: str | None = None
 
     model_config = {
-        "json_schema_extra": {"examples": [{"url": "https://notion.so"}]}
+        "json_schema_extra": {
+            "examples": [{"url": "https://notion.so", "submitted_by": "rob"}]
+        }
     }
 
 
 class EvaluateResponse(BaseModel):
+    id: int
     url: str
+    submitted_by: str | None
     skeptic: str
     ethicist: str
     builder: str
@@ -211,10 +223,13 @@ async def evaluate(request: EvaluateRequest):
     """
     Submit a URL to the Dreamcatcher Council for evaluation.
 
-    Each persona receives the current wishlist + guardrails as context,
-    so edits in the editor UI immediately reshape future verdicts.
+    Each persona receives the current wishlist + guardrails as context, so
+    edits in the editor UI immediately reshape future verdicts. The full
+    evaluation — including the wishlist snapshot at the time of judgement —
+    is persisted so history can be reviewed later.
     """
     url_str = str(request.url)
+    submitted_by = (request.submitted_by or "").strip() or None
 
     try:
         wishlist = load_wishlist()
@@ -243,8 +258,42 @@ async def evaluate(request: EvaluateRequest):
     builder_rec = extract_recommendation(builder_response)
     verdict = derive_verdict([skeptic_rec, ethicist_rec, builder_rec])
 
+    try:
+        saved = save_verdict(
+            url=url_str,
+            submitted_by=submitted_by,
+            skeptic_response=skeptic_response,
+            ethicist_response=ethicist_response,
+            builder_response=builder_response,
+            skeptic_recommendation=skeptic_rec,
+            ethicist_recommendation=ethicist_rec,
+            builder_recommendation=builder_rec,
+            verdict=verdict,
+            wishlist_snapshot=content,
+            wishlist_updated_at=wishlist.updated_at,
+            council_model=COUNCIL_MODEL,
+        )
+    except Exception as exc:
+        # The council ran, we have a result. History persistence is best-effort —
+        # don't fail the user's response if Supabase is having a moment.
+        print(f"warning: verdict history save failed: {exc}")
+        return EvaluateResponse(
+            id=0,
+            url=url_str,
+            submitted_by=submitted_by,
+            skeptic=skeptic_response,
+            ethicist=ethicist_response,
+            builder=builder_response,
+            skeptic_recommendation=skeptic_rec,
+            ethicist_recommendation=ethicist_rec,
+            builder_recommendation=builder_rec,
+            verdict=verdict,
+        )
+
     return EvaluateResponse(
+        id=saved.id,
         url=url_str,
+        submitted_by=submitted_by,
         skeptic=skeptic_response,
         ethicist=ethicist_response,
         builder=builder_response,
@@ -252,4 +301,54 @@ async def evaluate(request: EvaluateRequest):
         ethicist_recommendation=ethicist_rec,
         builder_recommendation=builder_rec,
         verdict=verdict,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Verdict history
+# ---------------------------------------------------------------------------
+
+@app.get("/verdicts", response_class=HTMLResponse)
+async def get_verdicts_page(request: Request, verdict: str | None = None):
+    filter_value = (verdict or "").upper().strip() or None
+    try:
+        verdicts = list_verdicts(limit=60, verdict_filter=filter_value)
+        counts = verdict_counts()
+    except Exception as exc:
+        return HTMLResponse(
+            f"<h1>History unavailable</h1><pre>{exc}</pre>",
+            status_code=503,
+        )
+    return templates.TemplateResponse(
+        request=request,
+        name="verdicts.html",
+        context={
+            "verdicts": verdicts,
+            "counts": counts,
+            "filter": filter_value,
+        },
+    )
+
+
+@app.get("/verdicts/{verdict_id}", response_class=HTMLResponse)
+async def get_verdict_detail(request: Request, verdict_id: int):
+    try:
+        verdict = get_verdict(verdict_id)
+    except Exception as exc:
+        return HTMLResponse(
+            f"<h1>Verdict unavailable</h1><pre>{exc}</pre>",
+            status_code=503,
+        )
+    if verdict is None:
+        raise HTTPException(status_code=404, detail="Verdict not found")
+
+    MD.reset()
+    snapshot_html = MD.convert(verdict.wishlist_snapshot)
+    return templates.TemplateResponse(
+        request=request,
+        name="verdict_detail.html",
+        context={
+            "verdict": verdict,
+            "snapshot_html": snapshot_html,
+        },
     )

@@ -1,0 +1,129 @@
+{% extends "_base.html" %}
+{% block title %}History{% endblock %}
+
+{% block content %}
+
+<!-- HERO ---------------------------------------------------- -->
+<section class="relative noise overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 pt-24 pb-20 relative">
+    <p class="serif-soft text-lg md:text-xl mb-6">a shared memory. &nbsp;who asked, what they asked, what the council said.</p>
+    <h1 class="display-xl text-[clamp(3rem,10vw,9rem)] text-cream">
+      The <span class="text-gold">History</span>
+    </h1>
+    <div class="mt-10 max-w-3xl grid gap-4 md:grid-cols-2 text-cream">
+      <p class="border-l-4 border-gold pl-4">
+        Every evaluation becomes part of the <span class="text-gold">institutional record</span>.
+        No verdict is private, no question is wasted.
+      </p>
+      <p class="serif-soft">this is not an archive. it is a witness to what we have decided, together, so far.</p>
+    </div>
+
+    <div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl">
+      <div class="border-4 border-gold/30 p-4">
+        <p class="font-mono text-xs uppercase tracking-widest text-cream-muted">total</p>
+        <p class="display-xl text-4xl text-cream mt-1">{{ counts.TOTAL }}</p>
+      </div>
+      <a href="/verdicts?verdict=GO" class="block border-4 border-gold/60 p-4 hover:bg-gold hover:text-obsidian transition-colors group">
+        <p class="font-mono text-xs uppercase tracking-widest text-gold group-hover:text-obsidian">go</p>
+        <p class="display-xl text-4xl text-gold group-hover:text-obsidian mt-1">{{ counts.GO }}</p>
+      </a>
+      <a href="/verdicts?verdict=HOLD" class="block border-4 border-cream-muted/40 p-4 hover:bg-cream-muted hover:text-obsidian transition-colors group">
+        <p class="font-mono text-xs uppercase tracking-widest text-cream-muted group-hover:text-obsidian">hold</p>
+        <p class="display-xl text-4xl text-cream group-hover:text-obsidian mt-1">{{ counts.HOLD }}</p>
+      </a>
+      <a href="/verdicts?verdict=PASS" class="block border-4 border-skeptic/60 p-4 hover:bg-skeptic hover:text-obsidian transition-colors group">
+        <p class="font-mono text-xs uppercase tracking-widest text-skeptic group-hover:text-obsidian">pass</p>
+        <p class="display-xl text-4xl text-skeptic group-hover:text-obsidian mt-1">{{ counts.PASS }}</p>
+      </a>
+    </div>
+  </div>
+  <div class="gold-rule"></div>
+</section>
+
+<!-- FILTER BAR ---------------------------------------------- -->
+<section class="max-w-7xl mx-auto px-6 pt-10">
+  <div class="flex flex-wrap items-center gap-3 text-xs font-mono uppercase tracking-[0.2em]">
+    <span class="text-cream-muted">// filter:</span>
+    <a href="/verdicts"
+       class="px-4 py-2 border border-gold/60 {% if not filter %}bg-gold text-obsidian{% else %}text-gold hover:bg-gold/20{% endif %}">
+      all
+    </a>
+    <a href="/verdicts?verdict=GO"
+       class="px-4 py-2 border border-gold/60 {% if filter == 'GO' %}bg-gold text-obsidian{% else %}text-gold hover:bg-gold/20{% endif %}">
+      go
+    </a>
+    <a href="/verdicts?verdict=HOLD"
+       class="px-4 py-2 border border-cream-muted/60 {% if filter == 'HOLD' %}bg-cream-muted text-obsidian{% else %}text-cream-muted hover:bg-cream-muted/20{% endif %}">
+      hold
+    </a>
+    <a href="/verdicts?verdict=PASS"
+       class="px-4 py-2 border border-skeptic/60 {% if filter == 'PASS' %}bg-skeptic text-obsidian{% else %}text-skeptic hover:bg-skeptic/20{% endif %}">
+      pass
+    </a>
+  </div>
+</section>
+
+<!-- VERDICT GRID -------------------------------------------- -->
+<section class="max-w-7xl mx-auto px-6 py-16">
+  {% if not verdicts %}
+    <div class="border-4 border-gold/30 p-16 text-center">
+      <p class="font-mono text-xs uppercase tracking-[0.25em] text-gold mb-4">// the record is empty</p>
+      <p class="serif-soft text-lg max-w-md mx-auto">no verdicts yet. the first question ever asked becomes part of a history none of us can edit.</p>
+      <a href="/" class="inline-block mt-8 border-2 border-gold px-6 py-3 text-gold hover:bg-gold hover:text-obsidian transition-colors font-display font-black uppercase tracking-widest text-xs">
+        ask the first question →
+      </a>
+    </div>
+  {% else %}
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {% for v in verdicts %}
+      <a href="/verdicts/{{ v.id }}"
+         class="group block relative bg-abyss border-4 border-gold/30 hover:border-gold transition-all p-6
+                hover:translate-x-1 hover:-translate-y-1">
+        <!-- verdict badge -->
+        {% if v.verdict == 'GO' %}
+          <div class="absolute -top-4 -right-4 bg-gold text-obsidian font-display font-black uppercase tracking-widest text-xs px-4 py-2">
+            go
+          </div>
+        {% elif v.verdict == 'HOLD' %}
+          <div class="absolute -top-4 -right-4 bg-cream-muted text-obsidian font-display font-black uppercase tracking-widest text-xs px-4 py-2">
+            hold
+          </div>
+        {% else %}
+          <div class="absolute -top-4 -right-4 bg-skeptic text-obsidian font-display font-black uppercase tracking-widest text-xs px-4 py-2">
+            pass
+          </div>
+        {% endif %}
+
+        <p class="font-mono text-[10px] uppercase tracking-[0.25em] text-cream-muted mb-2">
+          #{{ v.id }} &nbsp;·&nbsp; {{ v.created_at_human }}
+        </p>
+
+        <h3 class="display-xl text-xl text-cream leading-tight mb-3 break-words group-hover:text-gold transition-colors">
+          {{ v.url|replace('https://', '')|replace('http://', '')|truncate(60) }}
+        </h3>
+
+        <div class="flex gap-2 flex-wrap mt-4">
+          <span class="tag {% if v.skeptic_recommendation == 'GO' %}bg-gold text-obsidian{% elif v.skeptic_recommendation == 'PASS' %}text-skeptic border-skeptic/60{% endif %}">
+            skeptic: {{ v.skeptic_recommendation|lower }}
+          </span>
+          <span class="tag {% if v.ethicist_recommendation == 'GO' %}bg-gold text-obsidian{% elif v.ethicist_recommendation == 'PASS' %}text-skeptic border-skeptic/60{% endif %}">
+            ethicist: {{ v.ethicist_recommendation|lower }}
+          </span>
+          <span class="tag {% if v.builder_recommendation == 'GO' %}bg-gold text-obsidian{% elif v.builder_recommendation == 'PASS' %}text-skeptic border-skeptic/60{% endif %}">
+            builder: {{ v.builder_recommendation|lower }}
+          </span>
+        </div>
+
+        <div class="mt-5 pt-4 border-t border-gold/20">
+          <p class="font-mono text-[10px] uppercase tracking-widest text-cream-muted">
+            <span class="text-gold">submitted by</span>
+            {{ v.submitted_by or 'anonymous' }}
+          </p>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+</section>
+
+{% endblock %}

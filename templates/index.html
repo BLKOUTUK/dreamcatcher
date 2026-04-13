@@ -31,6 +31,9 @@
 
   <form id="evalForm" class="space-y-6">
     <div class="relative">
+      <label class="block font-mono text-xs uppercase tracking-[0.25em] text-gold mb-3">
+        // tool url
+      </label>
       <textarea
         id="prompt"
         rows="3"
@@ -39,6 +42,19 @@
                placeholder:text-cream-muted/50 focus:glow-gold"
         placeholder="https://example.com"
       ></textarea>
+    </div>
+
+    <div>
+      <label class="block font-mono text-xs uppercase tracking-[0.25em] text-gold mb-3">
+        // your name <span class="text-cream-muted normal-case">(recorded on the verdict, optional)</span>
+      </label>
+      <input
+        id="submitterName"
+        type="text"
+        placeholder="rob / keisha / the board"
+        class="w-full bg-abyss border-4 border-gold/60 focus:border-gold
+               text-cream font-body text-base px-5 py-4 outline-none transition-all
+               placeholder:text-cream-muted/50">
     </div>
 
     <button
@@ -56,7 +72,8 @@
   <p class="serif-soft text-sm mt-6">
     each evaluation asks three personas, in parallel, to hold this tool against blkout's
     <a href="/wishlist" class="text-gold underline decoration-gold/40 underline-offset-4 hover:decoration-gold">living wishlist</a>.
-    it takes 15–40 seconds.
+    it takes 15–40 seconds. every verdict joins the
+    <a href="/verdicts" class="text-gold underline decoration-gold/40 underline-offset-4 hover:decoration-gold">shared history</a>.
   </p>
 </section>
 
@@ -83,10 +100,18 @@
         <p id="verdictText" class="display-xl text-6xl md:text-8xl text-cream"></p>
         <p class="serif-soft mt-3" id="verdictSubtext"></p>
       </div>
-      <div class="flex gap-3 flex-wrap">
-        <span id="recSkeptic"  class="tag"></span>
-        <span id="recEthicist" class="tag"></span>
-        <span id="recBuilder"  class="tag"></span>
+      <div class="flex flex-col items-end gap-3">
+        <div class="flex gap-3 flex-wrap">
+          <span id="recSkeptic"  class="tag"></span>
+          <span id="recEthicist" class="tag"></span>
+          <span id="recBuilder"  class="tag"></span>
+        </div>
+        <a id="verdictPermalink"
+           href="#"
+           class="hidden font-mono text-xs uppercase tracking-[0.25em] text-gold
+                  underline decoration-gold/40 underline-offset-4 hover:decoration-gold">
+          permanent record →
+        </a>
       </div>
     </div>
   </div>
@@ -123,6 +148,14 @@
   const btnText = document.getElementById('btnText');
   const loading = document.getElementById('loading');
   const results = document.getElementById('results');
+  const nameField = document.getElementById('submitterName');
+
+  // Remember the submitter name across sessions so board members don't retype it.
+  const savedName = localStorage.getItem('dreamcatcher_submitter');
+  if (savedName) nameField.value = savedName;
+  nameField.addEventListener('input', () => {
+    localStorage.setItem('dreamcatcher_submitter', nameField.value);
+  });
 
   function setRec(el, rec) {
     el.textContent = `${el.id.replace('rec','')}: ${rec}`;
@@ -146,7 +179,7 @@
       const res = await fetch('/evaluate', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url, submitted_by: nameField.value.trim() || null }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: 'unknown error' }));
@@ -169,6 +202,15 @@
       document.getElementById('skepticText').textContent  = data.skeptic;
       document.getElementById('ethicistText').textContent = data.ethicist;
       document.getElementById('builderText').textContent  = data.builder;
+
+      // Link to the permanent verdict record if it was saved.
+      const permalink = document.getElementById('verdictPermalink');
+      if (data.id && data.id > 0) {
+        permalink.href = `/verdicts/${data.id}`;
+        permalink.classList.remove('hidden');
+      } else {
+        permalink.classList.add('hidden');
+      }
 
       loading.classList.add('hidden');
       results.classList.remove('hidden');
