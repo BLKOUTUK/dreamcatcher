@@ -1,0 +1,87 @@
+{% extends "_base.html" %}
+{% block title %}Edit the Wishlist{% endblock %}
+
+{% block content %}
+
+<!-- HERO ---------------------------------------------------- -->
+<section class="relative noise overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 pt-24 pb-16 relative">
+    <p class="serif-soft text-lg md:text-xl mb-6">a careful hand on the rulebook.</p>
+    <h1 class="display-xl text-[clamp(3rem,10vw,8rem)] text-cream">
+      Editing<br>the <span class="text-gold">Wishlist</span>
+    </h1>
+    <div class="mt-8 max-w-3xl">
+      <p class="text-lg text-cream leading-relaxed border-l-4 border-gold pl-4">
+        Every change here is read by <span class="text-gold">every future Council verdict</span>.
+        Be deliberate. The document is in markdown — headings, em-dashes, and italics render as
+        you see them on the public view.
+      </p>
+    </div>
+    <p class="font-mono text-xs uppercase tracking-widest text-cream-muted mt-8">
+      <span class="text-gold">last revised</span> &nbsp; {{ updated_at }}
+      {% if updated_by %}
+      &nbsp;·&nbsp; <span class="text-gold">by</span> &nbsp; {{ updated_by }}
+      {% endif %}
+      &nbsp;·&nbsp; <a href="/wishlist" class="text-gold underline decoration-gold/40 underline-offset-4">back to view</a>
+    </p>
+  </div>
+  <div class="gold-rule"></div>
+</section>
+
+<!-- EDITOR -------------------------------------------------- -->
+<section class="relative max-w-5xl mx-auto px-6 py-16">
+  <form method="POST" action="/wishlist" class="space-y-8">
+    <div>
+      <label class="block font-mono text-xs uppercase tracking-[0.25em] text-gold mb-3">
+        // markdown source
+      </label>
+      <textarea
+        name="content"
+        rows="32"
+        class="w-full bg-abyss border-4 border-gold/60 focus:border-gold focus:glow-gold
+               text-cream font-mono text-sm p-6 outline-none transition-all
+               leading-relaxed"
+        required>{{ content }}</textarea>
+      <p class="serif-soft text-sm mt-3">
+        use <code class="font-mono text-gold">—</code> em-dashes at the start of list items,
+        <code class="font-mono text-gold">**bold**</code> for capability names,
+        <code class="font-mono text-gold">`tags`</code> in backticks for tier / category labels,
+        <code class="font-mono text-gold">*italics*</code> for tender notes.
+      </p>
+    </div>
+
+    <div class="grid gap-6 md:grid-cols-[1fr_auto] md:items-end">
+      <div>
+        <label class="block font-mono text-xs uppercase tracking-[0.25em] text-gold mb-3">
+          // your name (optional — recorded with the edit)
+        </label>
+        <input
+          type="text"
+          name="updated_by"
+          placeholder="rob / keisha / the board"
+          class="w-full bg-abyss border-4 border-gold/60 focus:border-gold
+                 text-cream font-body text-base px-5 py-4 outline-none transition-all
+                 placeholder:text-cream-muted/50">
+      </div>
+      <button
+        type="submit"
+        class="group relative px-10 py-5 bg-gold text-obsidian
+               display-xl text-lg hover:bg-gold-light transition-colors">
+        <span>Commit the change</span>
+        <span class="absolute inset-0 border-4 border-gold translate-x-2 translate-y-2 -z-10
+                     group-hover:translate-x-1 group-hover:translate-y-1 transition-transform"></span>
+      </button>
+    </div>
+  </form>
+
+  <div class="mt-12 p-6 border-l-4 border-gold/60 bg-abyss/60">
+    <p class="font-mono text-xs uppercase tracking-[0.25em] text-gold mb-2">// what happens when you commit</p>
+    <ul class="text-cream-muted text-sm space-y-2">
+      <li>— The document saves to Supabase. One row, updated in place. <span class="serif-soft">no history retained yet.</span></li>
+      <li>— Every <span class="text-gold">next</span> Council evaluation reads the new version.</li>
+      <li>— There is no soft-delete. <span class="serif-soft">keep a copy if the stakes are high.</span></li>
+    </ul>
+  </div>
+</section>
+
+{% endblock %}

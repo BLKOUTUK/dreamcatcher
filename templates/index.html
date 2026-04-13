@@ -1,72 +1,186 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dreamcatcher Council</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background: #0f172a; color: #f8fafc; }
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); }
-    </style>
-</head>
-<body class="min-h-screen flex items-center justify-center p-4">
-    <div class="glass max-w-2xl w-full p-8 rounded-2xl shadow-2xl border border-slate-700">
-        <h1 class="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">Dreamcatcher</h1>
-        <p class="text-slate-400 mb-8">Consult the Council of LLMs on your next big idea by submitting a URL.</p>
+{% extends "_base.html" %}
+{% block title %}The Council{% endblock %}
 
-        <textarea id="prompt" class="w-full h-32 bg-slate-900 border border-slate-700 rounded-xl p-4 text-white focus:ring-2 focus:ring-blue-500 outline-none mb-4" placeholder="Enter the URL of the tool or resource to evaluate..."></textarea>
+{% block content %}
 
-        <button onclick="askCouncil()" id="askBtn" class="w-full bg-blue-600 hover:bg-blue-500 transition p-4 rounded-xl font-bold">Summon the Council</button>
+<!-- HERO ---------------------------------------------------- -->
+<section class="relative noise overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 pt-24 pb-32 relative">
+    <p class="serif-soft text-lg md:text-xl mb-6">a council convenes &nbsp;·&nbsp; on the question of whether to adopt</p>
+    <h1 class="display-xl text-[clamp(3rem,10vw,9rem)] text-cream">
+      Dream<span class="text-gold">catcher</span>
+    </h1>
+    <div class="mt-8 max-w-2xl">
+      <p class="text-lg md:text-xl text-cream leading-relaxed">
+        Three voices. One question. <br>
+        <span class="serif-soft">should blkout adopt this tool, at this moment, for this community?</span>
+      </p>
+      <p class="font-mono text-xs uppercase tracking-widest text-gold mt-8">
+        the skeptic &nbsp;—&nbsp; the ethicist &nbsp;—&nbsp; the builder
+      </p>
+    </div>
+  </div>
+  <div class="gold-rule"></div>
+</section>
 
-        <div id="response" class="mt-8 space-y-4 hidden">
-            <h3 class="text-xl font-semibold border-b border-slate-700 pb-2">The Council's Decree:</h3>
-            <div id="resultText" class="text-slate-300 italic whitespace-pre-wrap"></div>
-        </div>
+<!-- SUBMISSION ---------------------------------------------- -->
+<section class="relative max-w-4xl mx-auto px-6 py-24">
+  <p class="font-mono text-xs uppercase tracking-[0.25em] text-gold mb-4">// submit a tool</p>
+  <h2 class="display-xl text-4xl md:text-6xl text-cream mb-2">Summon the Council</h2>
+  <p class="serif-soft text-lg mb-10">paste a url. the council will read it against the living wishlist + guardrails.</p>
+
+  <form id="evalForm" class="space-y-6">
+    <div class="relative">
+      <textarea
+        id="prompt"
+        rows="3"
+        class="w-full bg-abyss border-4 border-gold/60 focus:border-gold
+               text-cream font-mono text-base p-6 outline-none transition-all
+               placeholder:text-cream-muted/50 focus:glow-gold"
+        placeholder="https://example.com"
+      ></textarea>
     </div>
 
-    <script>
-        async function askCouncil() {
-            const prompt = document.getElementById('prompt').value.trim();
-            const btn = document.getElementById('askBtn');
-            const responseDiv = document.getElementById('response');
-            const resultText = document.getElementById('resultText');
+    <button
+      type="submit"
+      id="askBtn"
+      class="group relative w-full md:w-auto px-10 py-5 bg-gold text-obsidian
+             display-xl text-lg hover:bg-gold-light transition-colors
+             disabled:opacity-50 disabled:cursor-not-allowed">
+      <span id="btnText">Summon the Council</span>
+      <span class="absolute inset-0 border-4 border-gold translate-x-2 translate-y-2 -z-10
+                   group-hover:translate-x-1 group-hover:translate-y-1 transition-transform"></span>
+    </button>
+  </form>
 
-            if (!prompt) {
-                resultText.innerText = 'Please enter a URL or description before consulting the council.';
-                responseDiv.classList.remove('hidden');
-                return;
-            }
+  <p class="serif-soft text-sm mt-6">
+    each evaluation asks three personas, in parallel, to hold this tool against blkout's
+    <a href="/wishlist" class="text-gold underline decoration-gold/40 underline-offset-4 hover:decoration-gold">living wishlist</a>.
+    it takes 15–40 seconds.
+  </p>
+</section>
 
-            btn.innerText = 'Consulting...';
-            btn.disabled = true;
-            resultText.innerText = '';
+<!-- LOADING ------------------------------------------------- -->
+<section id="loading" class="hidden max-w-4xl mx-auto px-6 pb-24 text-center">
+  <p class="font-mono text-xs uppercase tracking-[0.25em] text-gold mb-6 animate-pulse">// the council convenes</p>
+  <div class="flex justify-center gap-3">
+    <span class="w-3 h-3 bg-gold animate-bounce" style="animation-delay:0ms"></span>
+    <span class="w-3 h-3 bg-gold animate-bounce" style="animation-delay:200ms"></span>
+    <span class="w-3 h-3 bg-gold animate-bounce" style="animation-delay:400ms"></span>
+  </div>
+  <p class="serif-soft mt-6">the skeptic sharpens their questions. the ethicist opens the guardrails. the builder checks the stack.</p>
+</section>
 
-            try {
-                const res = await fetch('/evaluate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ url: prompt }),
-                });
+<!-- RESULTS ------------------------------------------------- -->
+<section id="results" class="hidden relative pb-32">
+  <div class="gold-rule"></div>
 
-                if (!res.ok) {
-                    const error = await res.json();
-                    throw new Error(error.detail || 'Unexpected error');
-                }
+  <!-- Verdict banner -->
+  <div id="verdictBanner" class="bg-abyss border-b-4 border-gold py-12 noise relative">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div>
+        <p class="font-mono text-xs uppercase tracking-[0.25em] text-gold mb-2">// the council's verdict</p>
+        <p id="verdictText" class="display-xl text-6xl md:text-8xl text-cream"></p>
+        <p class="serif-soft mt-3" id="verdictSubtext"></p>
+      </div>
+      <div class="flex gap-3 flex-wrap">
+        <span id="recSkeptic"  class="tag"></span>
+        <span id="recEthicist" class="tag"></span>
+        <span id="recBuilder"  class="tag"></span>
+      </div>
+    </div>
+  </div>
 
-                const data = await res.json();
-                responseDiv.classList.remove('hidden');
-                resultText.innerText = `Skeptic:\n${data.skeptic}\n\nEthicist:\n${data.ethicist}\n\nBuilder:\n${data.builder}\n\nVerdict: ${data.verdict}`;
-            } catch (err) {
-                responseDiv.classList.remove('hidden');
-                resultText.innerText = `Request failed: ${err.message}`;
-            } finally {
-                btn.innerText = 'Summon the Council';
-                btn.disabled = false;
-            }
-        }
-    </script>
-</body>
-</html>
+  <!-- Persona columns -->
+  <div class="max-w-7xl mx-auto px-6 pt-16 grid gap-8 lg:grid-cols-3">
+    <article class="relative">
+      <div class="absolute left-0 top-0 h-1 w-16 bg-skeptic"></div>
+      <p class="font-mono text-xs uppercase tracking-[0.25em] text-skeptic mt-4">// persona 01</p>
+      <h3 class="display-xl text-3xl text-cream mt-2">The Skeptic</h3>
+      <p class="serif-soft text-sm mb-6">technical risk, lock-in, sequencing.</p>
+      <div id="skepticText" class="text-cream-muted font-body whitespace-pre-wrap leading-relaxed text-sm"></div>
+    </article>
+    <article class="relative">
+      <div class="absolute left-0 top-0 h-1 w-16 bg-ethicist"></div>
+      <p class="font-mono text-xs uppercase tracking-[0.25em] text-ethicist mt-4">// persona 02</p>
+      <h3 class="display-xl text-3xl text-cream mt-2">The Ethicist</h3>
+      <p class="serif-soft text-sm mb-6">values, sovereignty, community benefit.</p>
+      <div id="ethicistText" class="text-cream-muted font-body whitespace-pre-wrap leading-relaxed text-sm"></div>
+    </article>
+    <article class="relative">
+      <div class="absolute left-0 top-0 h-1 w-16 bg-builder"></div>
+      <p class="font-mono text-xs uppercase tracking-[0.25em] text-builder mt-4">// persona 03</p>
+      <h3 class="display-xl text-3xl text-cream mt-2">The Builder</h3>
+      <p class="serif-soft text-sm mb-6">vibe-codeability, stack fit, lift.</p>
+      <div id="builderText" class="text-cream-muted font-body whitespace-pre-wrap leading-relaxed text-sm"></div>
+    </article>
+  </div>
+</section>
+
+<script>
+  const form = document.getElementById('evalForm');
+  const btn = document.getElementById('askBtn');
+  const btnText = document.getElementById('btnText');
+  const loading = document.getElementById('loading');
+  const results = document.getElementById('results');
+
+  function setRec(el, rec) {
+    el.textContent = `${el.id.replace('rec','')}: ${rec}`;
+    el.classList.remove('bg-gold','text-obsidian','border-gold');
+    if (rec === 'GO')   el.classList.add('bg-gold','text-obsidian','border-gold');
+    if (rec === 'PASS') el.classList.add('text-skeptic','border-skeptic/60');
+    if (rec === 'HOLD') el.classList.add('text-gold','border-gold/60');
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const url = document.getElementById('prompt').value.trim();
+    if (!url) return;
+
+    btn.disabled = true;
+    btnText.textContent = 'Convening...';
+    results.classList.add('hidden');
+    loading.classList.remove('hidden');
+
+    try {
+      const res = await fetch('/evaluate', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ url }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: 'unknown error' }));
+        throw new Error(err.detail || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+
+      document.getElementById('verdictText').textContent = data.verdict;
+      const subtext = {
+        GO:   'two or more voices say yes. proceed.',
+        HOLD: 'the voices disagree. gather more information.',
+        PASS: 'two or more voices say no. move on without guilt.',
+      }[data.verdict] || '';
+      document.getElementById('verdictSubtext').textContent = subtext;
+
+      setRec(document.getElementById('recSkeptic'),  data.skeptic_recommendation);
+      setRec(document.getElementById('recEthicist'), data.ethicist_recommendation);
+      setRec(document.getElementById('recBuilder'),  data.builder_recommendation);
+
+      document.getElementById('skepticText').textContent  = data.skeptic;
+      document.getElementById('ethicistText').textContent = data.ethicist;
+      document.getElementById('builderText').textContent  = data.builder;
+
+      loading.classList.add('hidden');
+      results.classList.remove('hidden');
+      results.scrollIntoView({ behavior: 'smooth' });
+    } catch (err) {
+      loading.classList.add('hidden');
+      alert('The council could not be reached: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btnText.textContent = 'Summon the Council';
+    }
+  });
+</script>
+
+{% endblock %}
