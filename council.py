@@ -9,7 +9,21 @@ opinion with a score and recommendation.
 import os
 from openai import OpenAI
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Dreamcatcher talks to OpenRouter via the OpenAI-compatible SDK.
+# This keeps the three personas on a single account and lets us swap models
+# without touching the council logic.
+client = OpenAI(
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+    base_url="https://openrouter.ai/api/v1",
+)
+
+COUNCIL_MODEL = os.getenv("DREAMCATCHER_MODEL", "anthropic/claude-sonnet-4")
+
+# OpenRouter asks clients to identify themselves so BLKOUT traffic is attributable.
+OPENROUTER_HEADERS = {
+    "HTTP-Referer": "https://dreamcatcher.blkoutuk.cloud",
+    "X-Title": "BLKOUT Dreamcatcher",
+}
 
 # ---------------------------------------------------------------------------
 # Shared helper
@@ -18,7 +32,8 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 def _query_persona(system_prompt: str, url: str) -> str:
     """Send a URL to a persona and return its plain-text evaluation."""
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model=COUNCIL_MODEL,
+        extra_headers=OPENROUTER_HEADERS,
         messages=[
             {"role": "system", "content": system_prompt},
             {
@@ -31,7 +46,7 @@ def _query_persona(system_prompt: str, url: str) -> str:
             },
         ],
         temperature=0.7,
-        max_tokens=500,
+        max_tokens=800,
     )
     return response.choices[0].message.content.strip()
 
