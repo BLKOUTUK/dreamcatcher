@@ -1,3 +1,7 @@
+import asyncio
+from contextlib import asynccontextmanager
+
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
@@ -13,11 +17,6 @@ FastAPI app exposing a single POST /evaluate endpoint.
 Submits a URL to all three council members (The Skeptic, The Ethicist, The Builder)
 and returns their individual evaluations plus a combined Verdict: GO | HOLD | PASS.
 """
-
-import asyncio
-from contextlib import asynccontextmanager
-
-from dotenv import load_dotenv
 
 # Load .env file (for local development; in production set env vars directly)
 load_dotenv()
