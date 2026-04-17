@@ -25,13 +25,16 @@ Quick diagnostic of workflows, tools, and bottlenecks. Keep/kill/replace/automat
 **7. Tech stability and system resilience** `infrastructure` `moderate lift`
 Without this, everything built on the infrastructure will fail. The VPS, Coolify, n8n, and all modules need to be reliable and recoverable before more is added. Foundational before ambitious.
 
+**12a. Project-budget reconciliation tool** `infrastructure` `accessible`
+Concrete, urgent operational component of the broader bookkeeping capability (item 12). Line items per grant: budgeted / committed / paid / outstanding. Tracks who is owed, who has been paid, what has been reimbursed from cards, whose bank details are known. Without it, every grant payment triggers a manual reconciliation from memory, Gmail and card statements. A stop-gap exists at `apps/comms-blkout/src/pages/admin/Finance.tsx` but contains only hardcoded projections — needs replacing with a live data layer. First test case: Ivor's Compass (£2,500 grant, five payees, card reimbursements pending).
+
 ---
 
 ## Tier 2 — plan and build
 *High impact, requires resourcing, people, or sequencing*
 
 **12. Bookkeeping, financial regulations and fundraising** `infrastructure` `moderate lift`
-CBS obligation, funder pipeline active. Needs the right person as much as the right tool — the Treasurer role is load-bearing. Required before significant grant income flows through the organisation.
+CBS obligation, funder pipeline active. Needs the right person as much as the right tool — the Treasurer role is load-bearing. Required before significant grant income flows through the organisation. The concrete first component is broken out as **12a** above.
 
 **15. Compliance infrastructure — demonstration not monitoring** `infrastructure` `moderate lift`
 Mission risk if left too long. Evidence of governance, financial stewardship, and community benefit must be buildable in real time, not reconstructed after challenge. Systems need building before they are needed.
