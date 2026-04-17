@@ -23,17 +23,17 @@
       {% endif %}
       <p class="serif-soft text-lg max-w-md">
         {% if verdict.verdict == 'GO' %}
-          two or more voices said yes. the council invited this in.
+          three or more voices said yes, and sylvia was not blocking. the council invited this in.
         {% elif verdict.verdict == 'HOLD' %}
-          the voices disagreed. held for more information, or the right season.
+          the voices disagreed — or sylvia asked for redesign before adoption. held for more information, or wider reach.
         {% else %}
-          two or more voices said no. release without guilt.
+          three or more voices said no. release without guilt.
         {% endif %}
       </p>
     </div>
 
     <div class="mt-8 font-mono text-xs uppercase tracking-widest text-cream-muted">
-      <span class="text-gold">submitted by</span> &nbsp; {{ verdict.submitted_by or 'anonymous' }}
+      <span class="text-gold">submitted by</span> &nbsp; {{ verdict.submitted_by or 'anonymous' }}{% if verdict.submitter_org %} &nbsp;·&nbsp; <span class="text-sylvia">{{ verdict.submitter_org }}</span>{% endif %}
       {% if verdict.council_model %}
         &nbsp;·&nbsp; <span class="text-gold">model</span> &nbsp; {{ verdict.council_model }}
       {% endif %}
@@ -47,12 +47,12 @@
   <div class="gold-rule"></div>
 </section>
 
-<!-- THE THREE VOICES ---------------------------------------- -->
+<!-- THE FOUR VOICES ----------------------------------------- -->
 <section class="max-w-7xl mx-auto px-6 py-20">
-  <p class="font-mono text-xs uppercase tracking-[0.25em] text-gold mb-4">// the three voices, in parallel</p>
+  <p class="font-mono text-xs uppercase tracking-[0.25em] text-gold mb-4">// the four voices, in parallel</p>
   <h2 class="display-xl text-4xl md:text-5xl text-cream mb-12">What the Council said</h2>
 
-  <div class="grid gap-10 lg:grid-cols-3">
+  <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
     <!-- Skeptic -->
     <article class="relative">
       <div class="absolute left-0 top-0 h-1 w-20 bg-skeptic"></div>
@@ -96,6 +96,29 @@
       </div>
       <p class="serif-soft text-sm mb-5">vibe-codeability, stack fit, lift.</p>
       <div class="text-cream-muted font-body text-sm leading-relaxed whitespace-pre-wrap">{{ verdict.builder_response }}</div>
+    </article>
+
+    <!-- Sylvia -->
+    <article class="relative">
+      <div class="absolute left-0 top-0 h-1 w-20 bg-sylvia"></div>
+      <p class="font-mono text-xs uppercase tracking-[0.25em] text-sylvia mt-4">// persona 04</p>
+      <div class="flex items-baseline justify-between mt-2 mb-3">
+        <h3 class="display-xl text-2xl text-cream">Sylvia</h3>
+        {% if verdict.sylvia_recommendation %}
+        <span class="tag
+          {% if verdict.sylvia_recommendation == 'GO' %}bg-gold text-obsidian{% elif verdict.sylvia_recommendation == 'PASS' %}text-sylvia border-sylvia/60{% else %}text-sylvia border-sylvia/40{% endif %}">
+          {{ verdict.sylvia_recommendation|lower }}
+        </span>
+        {% endif %}
+      </div>
+      <p class="serif-soft text-sm mb-5">reach, the under-served, who's on the street.</p>
+      {% if verdict.sylvia_response %}
+        <div class="text-cream-muted font-body text-sm leading-relaxed whitespace-pre-wrap">{{ verdict.sylvia_response }}</div>
+      {% else %}
+        <div class="text-cream-muted/60 font-body text-sm leading-relaxed italic">
+          sylvia was not on the council when this verdict was recorded.
+        </div>
+      {% endif %}
     </article>
   </div>
 </section>

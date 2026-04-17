@@ -33,6 +33,7 @@ from council import (
     ethicist,
     extract_recommendation,
     skeptic,
+    sylvia,
 )
 from verdicts import (
     get_verdict,
@@ -194,11 +195,18 @@ async def post_wishlist(
 
 class EvaluateRequest(BaseModel):
     url: HttpUrl
-    submitted_by: str | None = None
+    submitted_by: str
+    submitter_org: str
 
     model_config = {
         "json_schema_extra": {
-            "examples": [{"url": "https://notion.so", "submitted_by": "rob"}]
+            "examples": [
+                {
+                    "url": "https://notion.so",
+                    "submitted_by": "rob",
+                    "submitter_org": "BLKOUT",
+                }
+            ]
         }
     }
 
@@ -206,13 +214,16 @@ class EvaluateRequest(BaseModel):
 class EvaluateResponse(BaseModel):
     id: int
     url: str
-    submitted_by: str | None
+    submitted_by: str
+    submitter_org: str
     skeptic: str
     ethicist: str
     builder: str
+    sylvia: str
     skeptic_recommendation: str
     ethicist_recommendation: str
     builder_recommendation: str
+    sylvia_recommendation: str
     verdict: str
 
 
@@ -232,7 +243,14 @@ async def evaluate(request: EvaluateRequest):
     is persisted so history can be reviewed later.
     """
     url_str = str(request.url)
-    submitted_by = (request.submitted_by or "").strip() or None
+    submitted_by = request.submitted_by.strip()
+    submitter_org = request.submitter_org.strip()
+
+    if not submitted_by or not submitter_org:
+        raise HTTPException(
+            status_code=422,
+            detail="Both your name and your organisation are required to summon the council.",
+        )
 
     try:
         wishlist = load_wishlist()
@@ -245,10 +263,16 @@ async def evaluate(request: EvaluateRequest):
     content = wishlist.content
 
     try:
-        skeptic_response, ethicist_response, builder_response = await asyncio.gather(
+        (
+            skeptic_response,
+            ethicist_response,
+            builder_response,
+            sylvia_response,
+        ) = await asyncio.gather(
             asyncio.to_thread(skeptic, url_str, content),
             asyncio.to_thread(ethicist, url_str, content),
             asyncio.to_thread(builder, url_str, content),
+            asyncio.to_thread(sylvia, url_str, content, submitter_org),
         )
     except Exception as exc:
         raise HTTPException(
@@ -259,18 +283,25 @@ async def evaluate(request: EvaluateRequest):
     skeptic_rec = extract_recommendation(skeptic_response)
     ethicist_rec = extract_recommendation(ethicist_response)
     builder_rec = extract_recommendation(builder_response)
-    verdict = derive_verdict([skeptic_rec, ethicist_rec, builder_rec])
+    sylvia_rec = extract_recommendation(sylvia_response)
+    verdict = derive_verdict(
+        [skeptic_rec, ethicist_rec, builder_rec],
+        sylvia_recommendation=sylvia_rec,
+    )
 
     try:
         saved = save_verdict(
             url=url_str,
             submitted_by=submitted_by,
+            submitter_org=submitter_org,
             skeptic_response=skeptic_response,
             ethicist_response=ethicist_response,
             builder_response=builder_response,
+            sylvia_response=sylvia_response,
             skeptic_recommendation=skeptic_rec,
             ethicist_recommendation=ethicist_rec,
             builder_recommendation=builder_rec,
+            sylvia_recommendation=sylvia_rec,
             verdict=verdict,
             wishlist_snapshot=content,
             wishlist_updated_at=wishlist.updated_at,
@@ -284,12 +315,15 @@ async def evaluate(request: EvaluateRequest):
             id=0,
             url=url_str,
             submitted_by=submitted_by,
+            submitter_org=submitter_org,
             skeptic=skeptic_response,
             ethicist=ethicist_response,
             builder=builder_response,
+            sylvia=sylvia_response,
             skeptic_recommendation=skeptic_rec,
             ethicist_recommendation=ethicist_rec,
             builder_recommendation=builder_rec,
+            sylvia_recommendation=sylvia_rec,
             verdict=verdict,
         )
 
@@ -297,12 +331,15 @@ async def evaluate(request: EvaluateRequest):
         id=saved.id,
         url=url_str,
         submitted_by=submitted_by,
+        submitter_org=submitter_org,
         skeptic=skeptic_response,
         ethicist=ethicist_response,
         builder=builder_response,
+        sylvia=sylvia_response,
         skeptic_recommendation=skeptic_rec,
         ethicist_recommendation=ethicist_rec,
         builder_recommendation=builder_rec,
+        sylvia_recommendation=sylvia_rec,
         verdict=verdict,
     )
 

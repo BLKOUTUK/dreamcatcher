@@ -19,12 +19,15 @@ class Verdict:
     id: int
     url: str
     submitted_by: str | None
+    submitter_org: str | None
     skeptic_response: str
     ethicist_response: str
     builder_response: str
+    sylvia_response: str
     skeptic_recommendation: str
     ethicist_recommendation: str
     builder_recommendation: str
+    sylvia_recommendation: str
     verdict: str
     wishlist_snapshot: str
     wishlist_updated_at: str | None
@@ -64,12 +67,15 @@ def _row_to_verdict(row: dict[str, Any]) -> Verdict:
         id=row["id"],
         url=row["url"],
         submitted_by=row.get("submitted_by"),
+        submitter_org=row.get("submitter_org"),
         skeptic_response=row["skeptic_response"],
         ethicist_response=row["ethicist_response"],
         builder_response=row["builder_response"],
+        sylvia_response=row.get("sylvia_response") or "",
         skeptic_recommendation=row["skeptic_recommendation"],
         ethicist_recommendation=row["ethicist_recommendation"],
         builder_recommendation=row["builder_recommendation"],
+        sylvia_recommendation=row.get("sylvia_recommendation") or "",
         verdict=row["verdict"],
         wishlist_snapshot=row.get("wishlist_snapshot", ""),
         wishlist_updated_at=row.get("wishlist_updated_at"),
@@ -82,12 +88,15 @@ def save_verdict(
     *,
     url: str,
     submitted_by: str | None,
+    submitter_org: str | None,
     skeptic_response: str,
     ethicist_response: str,
     builder_response: str,
+    sylvia_response: str,
     skeptic_recommendation: str,
     ethicist_recommendation: str,
     builder_recommendation: str,
+    sylvia_recommendation: str,
     verdict: str,
     wishlist_snapshot: str,
     wishlist_updated_at: str | None,
@@ -96,12 +105,15 @@ def save_verdict(
     payload = {
         "url": url,
         "submitted_by": submitted_by or None,
+        "submitter_org": submitter_org or None,
         "skeptic_response": skeptic_response,
         "ethicist_response": ethicist_response,
         "builder_response": builder_response,
+        "sylvia_response": sylvia_response,
         "skeptic_recommendation": skeptic_recommendation,
         "ethicist_recommendation": ethicist_recommendation,
         "builder_recommendation": builder_recommendation,
+        "sylvia_recommendation": sylvia_recommendation,
         "verdict": verdict,
         "wishlist_snapshot": wishlist_snapshot,
         "wishlist_updated_at": wishlist_updated_at,
@@ -127,8 +139,8 @@ def list_verdicts(
 ) -> list[Verdict]:
     """List most recent verdicts. Excludes the large snapshot column to keep the payload small."""
     fields = (
-        "id,url,submitted_by,verdict,"
-        "skeptic_recommendation,ethicist_recommendation,builder_recommendation,"
+        "id,url,submitted_by,submitter_org,verdict,"
+        "skeptic_recommendation,ethicist_recommendation,builder_recommendation,sylvia_recommendation,"
         "wishlist_updated_at,council_model,created_at"
     )
     params = [
@@ -148,12 +160,15 @@ def list_verdicts(
             id=r["id"],
             url=r["url"],
             submitted_by=r.get("submitted_by"),
+            submitter_org=r.get("submitter_org"),
             skeptic_response="",
             ethicist_response="",
             builder_response="",
+            sylvia_response="",
             skeptic_recommendation=r["skeptic_recommendation"],
             ethicist_recommendation=r["ethicist_recommendation"],
             builder_recommendation=r["builder_recommendation"],
+            sylvia_recommendation=r.get("sylvia_recommendation") or "",
             verdict=r["verdict"],
             wishlist_snapshot="",
             wishlist_updated_at=r.get("wishlist_updated_at"),

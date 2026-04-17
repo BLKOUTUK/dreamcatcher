@@ -112,12 +112,17 @@
           <span class="tag {% if v.builder_recommendation == 'GO' %}bg-gold text-obsidian{% elif v.builder_recommendation == 'PASS' %}text-skeptic border-skeptic/60{% endif %}">
             builder: {{ v.builder_recommendation|lower }}
           </span>
+          {% if v.sylvia_recommendation %}
+          <span class="tag {% if v.sylvia_recommendation == 'GO' %}bg-gold text-obsidian{% elif v.sylvia_recommendation == 'PASS' %}text-sylvia border-sylvia/60{% else %}text-sylvia border-sylvia/40{% endif %}">
+            sylvia: {{ v.sylvia_recommendation|lower }}
+          </span>
+          {% endif %}
         </div>
 
         <div class="mt-5 pt-4 border-t border-gold/20">
           <p class="font-mono text-[10px] uppercase tracking-widest text-cream-muted">
             <span class="text-gold">submitted by</span>
-            {{ v.submitted_by or 'anonymous' }}
+            {{ v.submitted_by or 'anonymous' }}{% if v.submitter_org %} &nbsp;·&nbsp; <span class="text-sylvia">{{ v.submitter_org }}</span>{% endif %}
           </p>
         </div>
       </a>

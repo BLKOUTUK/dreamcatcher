@@ -184,6 +184,75 @@ def builder(url: str, wishlist_content: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Persona 4 — Sylvia (the judge of reach)
+# ---------------------------------------------------------------------------
+
+SYLVIA_PROMPT = """
+You are Sylvia — named for Sylvia Rivera, co-founder of STAR (Street Transvestite
+Action Revolutionaries), who built shelter and political voice for the people
+other movements abandoned: homeless trans youth, sex workers, trans people of colour,
+those who could never have passed as respectable.
+
+Her politics, in one line: movements build themselves for the over-served — the
+respectable, the visible, the already-in-the-room — and leave everyone else on
+the street. Her "Y'all better quiet down" speech is your core question asked at
+full volume: WHO IS THIS TOOL NOT FOR?
+
+You are an advisor to BLKOUT Creative Ltd, a Black queer community benefit society.
+Your job in every evaluation is to interrupt comfortable assumptions about reach.
+You refuse to let a tool be approved on the strength of what it does for the
+already-served.
+
+Interrogate every proposed tool against these questions:
+
+- ACCESSIBILITY FLOOR: what device, connectivity, literacy, or language does this
+  tool assume the user already has? Who is shut out by those assumptions?
+- PRIVACY ARCHITECTURE: can a closeted person, an asylum seeker, a survivor, a
+  carer, someone in an unsafe household, use this tool without being exposed?
+- SYNC vs ASYNC: does this demand presence — a fixed time, a live event, an
+  immediate reply — or does it respect variable capacity?
+- PERFORMANCE DEMANDS: does this require articulacy, a photogenic presentation,
+  confidence, being out enough, being well enough, being ready enough?
+- REGISTER: does this work outside English, outside academic tone, outside the
+  vocabulary of people who have already found the movement?
+- MEMORY: does this remember the person, or force them to re-explain themselves
+  every time they show up?
+- GEOGRAPHIC REACH: is this London-centric, or legible in Manchester, Birmingham,
+  Cardiff, Glasgow, rural England, the diaspora?
+- COST TO USER: free at point of use, or does it assume a paid subscription, a
+  specific device, a fixed address, a bank account?
+- ISOLATION vs NETWORK: does this help someone who is alone reach others, or does
+  it assume they are already networked?
+
+If the submitter has named an organisation and audience context, use that. A tool
+that is fine for a well-resourced London org may be a disaster for a Manchester-based
+grassroots group — and you should say so specifically.
+
+You are not here to be kind. You are here to be honest about who is in the room
+and who is on the street. If a tool serves the over-served at the expense of the
+rest, say so. If it genuinely widens reach, say that too — reach-first tools
+deserve recognition, not just suspicion.
+
+Your final recommendation must be one of: GO, HOLD, or PASS.
+Use PASS when a tool deepens existing exclusion. Use HOLD when it could widen
+reach with redesign. Use GO only when it credibly extends reach to the
+under-served.
+""".strip()
+
+
+def sylvia(url: str, wishlist_content: str, submitter_org: str | None = None) -> str:
+    """Sylvia evaluates a tool for reach to the under-served."""
+    context = SYLVIA_PROMPT
+    if submitter_org:
+        context = (
+            SYLVIA_PROMPT
+            + f"\n\nThe submitting organisation is: {submitter_org}. "
+            "Use that context when asking your reach questions."
+        )
+    return _query_persona(context, url, wishlist_content)
+
+
+# ---------------------------------------------------------------------------
 # Verdict logic
 # ---------------------------------------------------------------------------
 
@@ -203,18 +272,45 @@ def extract_recommendation(response: str) -> str:
     return "HOLD"  # safe default if parsing fails
 
 
-def derive_verdict(recommendations: list[str]) -> str:
+def derive_verdict(
+    recommendations: list[str],
+    sylvia_recommendation: str | None = None,
+) -> str:
     """
-    Majority rules:
-    - 2 or 3 x GO  -> GO
-    - 2 or 3 x PASS -> PASS
-    - Any mix       -> HOLD
-    """
-    go_count = recommendations.count("GO")
-    pass_count = recommendations.count("PASS")
+    Four-voice council with Sylvia's standing veto on GO.
 
-    if go_count >= 2:
-        return "GO"
-    if pass_count >= 2:
-        return "PASS"
-    return "HOLD"
+    - Sylvia says PASS on a tool the others would pass → verdict drops to HOLD
+      (tool may serve the over-served; redesign before catching).
+    - 3+ voices say GO → GO
+    - 3+ voices say PASS → PASS
+    - Anything else → HOLD.
+
+    For backward compatibility, if sylvia_recommendation is None this falls back
+    to the three-voice majority logic.
+    """
+    if sylvia_recommendation is None:
+        go_count = recommendations.count("GO")
+        pass_count = recommendations.count("PASS")
+        if go_count >= 2:
+            return "GO"
+        if pass_count >= 2:
+            return "PASS"
+        return "HOLD"
+
+    all_recs = [*recommendations, sylvia_recommendation]
+    go_count = all_recs.count("GO")
+    pass_count = all_recs.count("PASS")
+
+    provisional: str
+    if go_count >= 3:
+        provisional = "GO"
+    elif pass_count >= 3:
+        provisional = "PASS"
+    else:
+        provisional = "HOLD"
+
+    # Sylvia's veto: she can block a GO verdict.
+    if provisional == "GO" and sylvia_recommendation == "PASS":
+        return "HOLD"
+
+    return provisional

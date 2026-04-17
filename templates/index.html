@@ -12,11 +12,14 @@
     </h1>
     <div class="mt-8 max-w-2xl">
       <p class="text-lg md:text-xl text-cream leading-relaxed">
-        Three voices. One question. <br>
-        <span class="serif-soft">should blkout adopt this tool, at this moment, for this community?</span>
+        Four voices. One question. <br>
+        <span class="serif-soft">does this tool, at this moment, serve the community it claims to — and reach the ones it doesn't?</span>
       </p>
       <p class="font-mono text-xs uppercase tracking-widest text-gold mt-8">
-        the skeptic &nbsp;—&nbsp; the ethicist &nbsp;—&nbsp; the builder
+        the skeptic &nbsp;—&nbsp; the ethicist &nbsp;—&nbsp; the builder &nbsp;—&nbsp; sylvia
+      </p>
+      <p class="serif-soft text-sm mt-3">
+        sylvia asks who the tool is <em>not</em> for. named for sylvia rivera.
       </p>
     </div>
   </div>
@@ -44,18 +47,37 @@
       ></textarea>
     </div>
 
-    <div>
-      <label class="block font-mono text-xs uppercase tracking-[0.25em] text-gold mb-3">
-        // your name <span class="text-cream-muted normal-case">(recorded on the verdict, optional)</span>
-      </label>
-      <input
-        id="submitterName"
-        type="text"
-        placeholder="rob / keisha / the board"
-        class="w-full bg-abyss border-4 border-gold/60 focus:border-gold
-               text-cream font-body text-base px-5 py-4 outline-none transition-all
-               placeholder:text-cream-muted/50">
+    <div class="grid md:grid-cols-2 gap-6">
+      <div>
+        <label class="block font-mono text-xs uppercase tracking-[0.25em] text-gold mb-3">
+          // your name <span class="text-cream-muted normal-case">(required)</span>
+        </label>
+        <input
+          id="submitterName"
+          type="text"
+          required
+          placeholder="rob / keisha / marsha"
+          class="w-full bg-abyss border-4 border-gold/60 focus:border-gold
+                 text-cream font-body text-base px-5 py-4 outline-none transition-all
+                 placeholder:text-cream-muted/50">
+      </div>
+      <div>
+        <label class="block font-mono text-xs uppercase tracking-[0.25em] text-gold mb-3">
+          // your organisation <span class="text-cream-muted normal-case">(required)</span>
+        </label>
+        <input
+          id="submitterOrg"
+          type="text"
+          required
+          placeholder="black trans hub / melanin vybz / bmhwa"
+          class="w-full bg-abyss border-4 border-gold/60 focus:border-gold
+                 text-cream font-body text-base px-5 py-4 outline-none transition-all
+                 placeholder:text-cream-muted/50">
+      </div>
     </div>
+    <p class="serif-soft text-sm text-cream-muted -mt-2">
+      sylvia will ask her reach questions with your org's context in mind.
+    </p>
 
     <button
       type="submit"
@@ -70,10 +92,11 @@
   </form>
 
   <p class="serif-soft text-sm mt-6">
-    each evaluation asks three personas, in parallel, to hold this tool against blkout's
+    each evaluation asks four personas, in parallel, to hold this tool against blkout's
     <a href="/wishlist" class="text-gold underline decoration-gold/40 underline-offset-4 hover:decoration-gold">living wishlist</a>.
     it takes 15–40 seconds. every verdict joins the
     <a href="/verdicts" class="text-gold underline decoration-gold/40 underline-offset-4 hover:decoration-gold">shared history</a>.
+    sylvia carries a standing veto on any <em>catch</em> that leaves the under-served on the street.
   </p>
 </section>
 
@@ -85,7 +108,7 @@
     <span class="w-3 h-3 bg-gold animate-bounce" style="animation-delay:200ms"></span>
     <span class="w-3 h-3 bg-gold animate-bounce" style="animation-delay:400ms"></span>
   </div>
-  <p class="serif-soft mt-6">the skeptic sharpens their questions. the ethicist opens the guardrails. the builder checks the stack.</p>
+  <p class="serif-soft mt-6">the skeptic sharpens their questions. the ethicist opens the guardrails. the builder checks the stack. sylvia asks who's on the street.</p>
 </section>
 
 <!-- RESULTS ------------------------------------------------- -->
@@ -105,6 +128,7 @@
           <span id="recSkeptic"  class="tag"></span>
           <span id="recEthicist" class="tag"></span>
           <span id="recBuilder"  class="tag"></span>
+          <span id="recSylvia"   class="tag"></span>
         </div>
         <a id="verdictPermalink"
            href="#"
@@ -117,7 +141,7 @@
   </div>
 
   <!-- Persona columns -->
-  <div class="max-w-7xl mx-auto px-6 pt-16 grid gap-8 lg:grid-cols-3">
+  <div class="max-w-7xl mx-auto px-6 pt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
     <article class="relative">
       <div class="absolute left-0 top-0 h-1 w-16 bg-skeptic"></div>
       <p class="font-mono text-xs uppercase tracking-[0.25em] text-skeptic mt-4">// persona 01</p>
@@ -139,6 +163,13 @@
       <p class="serif-soft text-sm mb-6">vibe-codeability, stack fit, lift.</p>
       <div id="builderText" class="text-cream-muted font-body whitespace-pre-wrap leading-relaxed text-sm"></div>
     </article>
+    <article class="relative">
+      <div class="absolute left-0 top-0 h-1 w-16 bg-sylvia"></div>
+      <p class="font-mono text-xs uppercase tracking-[0.25em] text-sylvia mt-4">// persona 04</p>
+      <h3 class="display-xl text-3xl text-cream mt-2">Sylvia</h3>
+      <p class="serif-soft text-sm mb-6">reach, the under-served, who's on the street.</p>
+      <div id="sylviaText" class="text-cream-muted font-body whitespace-pre-wrap leading-relaxed text-sm"></div>
+    </article>
   </div>
 </section>
 
@@ -149,16 +180,23 @@
   const loading = document.getElementById('loading');
   const results = document.getElementById('results');
   const nameField = document.getElementById('submitterName');
+  const orgField = document.getElementById('submitterOrg');
 
-  // Remember the submitter name across sessions so board members don't retype it.
+  // Remember submitter name + org across sessions so returning users don't retype.
   const savedName = localStorage.getItem('dreamcatcher_submitter');
   if (savedName) nameField.value = savedName;
   nameField.addEventListener('input', () => {
     localStorage.setItem('dreamcatcher_submitter', nameField.value);
   });
+  const savedOrg = localStorage.getItem('dreamcatcher_submitter_org');
+  if (savedOrg) orgField.value = savedOrg;
+  orgField.addEventListener('input', () => {
+    localStorage.setItem('dreamcatcher_submitter_org', orgField.value);
+  });
 
   function setRec(el, rec) {
-    el.textContent = `${el.id.replace('rec','')}: ${rec}`;
+    const label = el.id.replace('rec','').toLowerCase();
+    el.textContent = `${label}: ${rec}`;
     el.classList.remove('bg-gold','text-obsidian','border-gold');
     if (rec === 'GO')   el.classList.add('bg-gold','text-obsidian','border-gold');
     if (rec === 'PASS') el.classList.add('text-skeptic','border-skeptic/60');
@@ -168,7 +206,13 @@
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const url = document.getElementById('prompt').value.trim();
+    const name = nameField.value.trim();
+    const org = orgField.value.trim();
     if (!url) return;
+    if (!name || !org) {
+      alert('Your name and your organisation are both required. Sylvia wants to know who is asking.');
+      return;
+    }
 
     btn.disabled = true;
     btnText.textContent = 'Convening...';
@@ -179,7 +223,7 @@
       const res = await fetch('/evaluate', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ url, submitted_by: nameField.value.trim() || null }),
+        body: JSON.stringify({ url, submitted_by: name, submitter_org: org }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ detail: 'unknown error' }));
@@ -189,19 +233,21 @@
 
       document.getElementById('verdictText').textContent = data.verdict;
       const subtext = {
-        GO:   'two or more voices say yes. proceed.',
-        HOLD: 'the voices disagree. gather more information.',
-        PASS: 'two or more voices say no. move on without guilt.',
+        GO:   'three or more voices say yes, and sylvia is not blocking. proceed.',
+        HOLD: 'the voices disagree — or sylvia is asking you to widen reach before adopting. gather more information.',
+        PASS: 'three or more voices say no. move on without guilt.',
       }[data.verdict] || '';
       document.getElementById('verdictSubtext').textContent = subtext;
 
       setRec(document.getElementById('recSkeptic'),  data.skeptic_recommendation);
       setRec(document.getElementById('recEthicist'), data.ethicist_recommendation);
       setRec(document.getElementById('recBuilder'),  data.builder_recommendation);
+      setRec(document.getElementById('recSylvia'),   data.sylvia_recommendation);
 
       document.getElementById('skepticText').textContent  = data.skeptic;
       document.getElementById('ethicistText').textContent = data.ethicist;
       document.getElementById('builderText').textContent  = data.builder;
+      document.getElementById('sylviaText').textContent   = data.sylvia;
 
       // Link to the permanent verdict record if it was saved.
       const permalink = document.getElementById('verdictPermalink');
