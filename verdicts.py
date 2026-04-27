@@ -4,6 +4,9 @@ verdicts.py — persistence for Dreamcatcher Council evaluations.
 Every /evaluate call stores one row in public.dreamcatcher_verdicts so the
 history is attributable and the wishlist snapshot at the time of judgement
 is preserved (the document can change later without invalidating the record).
+
+Column names use the post-rename surnames (baldwin / murray / rustin / rivera)
++ the Phase 3 newton scaffold. Migration: 002_rename_judges_to_surnames.sql.
 """
 
 import os
@@ -20,19 +23,22 @@ class Verdict:
     url: str
     submitted_by: str | None
     submitter_org: str | None
-    skeptic_response: str
-    ethicist_response: str
-    builder_response: str
-    sylvia_response: str
-    skeptic_recommendation: str
-    ethicist_recommendation: str
-    builder_recommendation: str
-    sylvia_recommendation: str
+    baldwin_response: str
+    murray_response: str
+    rustin_response: str
+    rivera_response: str
+    baldwin_recommendation: str
+    murray_recommendation: str
+    rustin_recommendation: str
+    rivera_recommendation: str
     verdict: str
     wishlist_snapshot: str
     wishlist_updated_at: str | None
     council_model: str | None
     created_at: str
+    # Phase 3 — populated by Newton when wired; nullable for now.
+    newton_response: str | None = None
+    newton_recommendation: str | None = None
 
     @property
     def created_at_human(self) -> str:
@@ -68,19 +74,21 @@ def _row_to_verdict(row: dict[str, Any]) -> Verdict:
         url=row["url"],
         submitted_by=row.get("submitted_by"),
         submitter_org=row.get("submitter_org"),
-        skeptic_response=row["skeptic_response"],
-        ethicist_response=row["ethicist_response"],
-        builder_response=row["builder_response"],
-        sylvia_response=row.get("sylvia_response") or "",
-        skeptic_recommendation=row["skeptic_recommendation"],
-        ethicist_recommendation=row["ethicist_recommendation"],
-        builder_recommendation=row["builder_recommendation"],
-        sylvia_recommendation=row.get("sylvia_recommendation") or "",
+        baldwin_response=row["baldwin_response"],
+        murray_response=row["murray_response"],
+        rustin_response=row["rustin_response"],
+        rivera_response=row.get("rivera_response") or "",
+        baldwin_recommendation=row["baldwin_recommendation"],
+        murray_recommendation=row["murray_recommendation"],
+        rustin_recommendation=row["rustin_recommendation"],
+        rivera_recommendation=row.get("rivera_recommendation") or "",
         verdict=row["verdict"],
         wishlist_snapshot=row.get("wishlist_snapshot", ""),
         wishlist_updated_at=row.get("wishlist_updated_at"),
         council_model=row.get("council_model"),
         created_at=row["created_at"],
+        newton_response=row.get("newton_response"),
+        newton_recommendation=row.get("newton_recommendation"),
     )
 
 
@@ -89,14 +97,14 @@ def save_verdict(
     url: str,
     submitted_by: str | None,
     submitter_org: str | None,
-    skeptic_response: str,
-    ethicist_response: str,
-    builder_response: str,
-    sylvia_response: str,
-    skeptic_recommendation: str,
-    ethicist_recommendation: str,
-    builder_recommendation: str,
-    sylvia_recommendation: str,
+    baldwin_response: str,
+    murray_response: str,
+    rustin_response: str,
+    rivera_response: str,
+    baldwin_recommendation: str,
+    murray_recommendation: str,
+    rustin_recommendation: str,
+    rivera_recommendation: str,
     verdict: str,
     wishlist_snapshot: str,
     wishlist_updated_at: str | None,
@@ -106,14 +114,14 @@ def save_verdict(
         "url": url,
         "submitted_by": submitted_by or None,
         "submitter_org": submitter_org or None,
-        "skeptic_response": skeptic_response,
-        "ethicist_response": ethicist_response,
-        "builder_response": builder_response,
-        "sylvia_response": sylvia_response,
-        "skeptic_recommendation": skeptic_recommendation,
-        "ethicist_recommendation": ethicist_recommendation,
-        "builder_recommendation": builder_recommendation,
-        "sylvia_recommendation": sylvia_recommendation,
+        "baldwin_response": baldwin_response,
+        "murray_response": murray_response,
+        "rustin_response": rustin_response,
+        "rivera_response": rivera_response,
+        "baldwin_recommendation": baldwin_recommendation,
+        "murray_recommendation": murray_recommendation,
+        "rustin_recommendation": rustin_recommendation,
+        "rivera_recommendation": rivera_recommendation,
         "verdict": verdict,
         "wishlist_snapshot": wishlist_snapshot,
         "wishlist_updated_at": wishlist_updated_at,
@@ -140,7 +148,8 @@ def list_verdicts(
     """List most recent verdicts. Excludes the large snapshot column to keep the payload small."""
     fields = (
         "id,url,submitted_by,submitter_org,verdict,"
-        "skeptic_recommendation,ethicist_recommendation,builder_recommendation,sylvia_recommendation,"
+        "baldwin_recommendation,murray_recommendation,rustin_recommendation,rivera_recommendation,"
+        "newton_recommendation,"
         "wishlist_updated_at,council_model,created_at"
     )
     params = [
@@ -161,19 +170,21 @@ def list_verdicts(
             url=r["url"],
             submitted_by=r.get("submitted_by"),
             submitter_org=r.get("submitter_org"),
-            skeptic_response="",
-            ethicist_response="",
-            builder_response="",
-            sylvia_response="",
-            skeptic_recommendation=r["skeptic_recommendation"],
-            ethicist_recommendation=r["ethicist_recommendation"],
-            builder_recommendation=r["builder_recommendation"],
-            sylvia_recommendation=r.get("sylvia_recommendation") or "",
+            baldwin_response="",
+            murray_response="",
+            rustin_response="",
+            rivera_response="",
+            baldwin_recommendation=r["baldwin_recommendation"],
+            murray_recommendation=r["murray_recommendation"],
+            rustin_recommendation=r["rustin_recommendation"],
+            rivera_recommendation=r.get("rivera_recommendation") or "",
             verdict=r["verdict"],
             wishlist_snapshot="",
             wishlist_updated_at=r.get("wishlist_updated_at"),
             council_model=r.get("council_model"),
             created_at=r["created_at"],
+            newton_response=None,
+            newton_recommendation=r.get("newton_recommendation"),
         )
         for r in rows
     ]

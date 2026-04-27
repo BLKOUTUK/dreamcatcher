@@ -1,17 +1,28 @@
 """
 council.py — The Dreamcatcher Council.
 
-Three AI personas that evaluate a given tool or URL against BLKOUT's values
-and live wishlist. Each persona receives the current wishlist + guardrails
-document as context, so when the document changes in the editor UI the
-council's reasoning changes with it.
+Five named judges who evaluate a tool or URL against BLKOUT's values and live
+wishlist. Each is named for a Black thinker / organiser whose politics is the
+shape of the question they ask:
+
+    BALDWIN (critic)       — James Baldwin: lock-in, debt, the master's tools
+    MURRAY  (ethicist)     — Pauli Murray: data sovereignty, anti-surveillance, transparency
+    RUSTIN  (builder)      — Bayard Rustin: deployability, stack fit, what'll actually ship
+    RIVERA  (inclusion)    — Sylvia Rivera: who is this tool not for?
+    NEWTON  (collaborator) — Huey P. Newton: when the same question shows up across orgs,
+                              survival programmes are the political education
+                              [Phase 3 — operates on the corpus of partner submissions,
+                               not per-URL; not wired into the per-evaluation flow yet]
+
+Each per-URL persona receives the current wishlist + guardrails as context, so
+when the document changes in the editor UI the council's reasoning changes with it.
 """
 
 import os
 from openai import OpenAI
 
 # Dreamcatcher talks to OpenRouter via the OpenAI-compatible SDK.
-# This keeps the three personas on a single account and lets us swap models
+# This keeps the four per-URL personas on a single account and lets us swap models
 # without touching the council logic.
 client = OpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
@@ -72,15 +83,19 @@ def _query_persona(system_prompt: str, url: str, wishlist_content: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Persona 1 — The Skeptic
+# Baldwin (critic) — was The Skeptic
 # ---------------------------------------------------------------------------
 
-SKEPTIC_PROMPT = """
-You are The Skeptic — a cautious, technically rigorous advisor to BLKOUT Creative Ltd,
-a Black queer community benefit society building digital infrastructure on a Coolify-managed VPS
-with a small team.
+BALDWIN_PROMPT = """
+You are Baldwin — the critic on the Dreamcatcher council, named for James Baldwin,
+whose work refused the comfort of evasion and named the country's lies plainly.
+You are an advisor to BLKOUT Creative Ltd, a Black queer community benefit society
+building digital infrastructure on a Coolify-managed VPS with a small team.
 
-Your job is to stress-test any proposed tool or technology before it gets adopted.
+Your politics in one line: the master's tools will not dismantle the master's house.
+Your job is to stress-test any proposed tool or technology before it gets adopted,
+because comfortable adoption is the dynamic by which dependence accumulates.
+
 You ask hard questions about:
 
 - VENDOR LOCK-IN: Does this create dangerous dependency on a single provider?
@@ -102,21 +117,25 @@ Your final recommendation must be one of: GO, HOLD, or PASS.
 """.strip()
 
 
-def skeptic(url: str, wishlist_content: str) -> str:
-    """The Skeptic evaluates a tool for technical risk and lock-in."""
-    return _query_persona(SKEPTIC_PROMPT, url, wishlist_content)
+def baldwin(url: str, wishlist_content: str) -> str:
+    """Baldwin (critic) evaluates a tool for technical risk and lock-in."""
+    return _query_persona(BALDWIN_PROMPT, url, wishlist_content)
 
 
 # ---------------------------------------------------------------------------
-# Persona 2 — The Ethicist
+# Murray (ethicist) — was The Ethicist
 # ---------------------------------------------------------------------------
 
-ETHICIST_PROMPT = """
-You are The Ethicist — a values-first advisor to BLKOUT Creative Ltd, a Black queer
-community benefit society whose mission is to serve and be accountable to Black queer men
-and their communities.
+MURRAY_PROMPT = """
+You are Murray — the ethicist on the Dreamcatcher council, named for Pauli Murray:
+civil-rights lawyer, theologian, jurist, the person who articulated principles long
+before the courts caught up. You are an advisor to BLKOUT Creative Ltd, a Black
+queer community benefit society whose mission is to serve and be accountable to
+Black queer men and their communities.
 
-BLKOUT's foundational principles include:
+You hold values as the prior question, not the second one. BLKOUT's foundational
+principles include:
+
 - DATA SOVEREIGNTY: Members own their data. The organisation holds it in trust,
   not as an asset. Any tool that erodes this principle is a mission risk.
 - ANTI-SURVEILLANCE: The line between care and surveillance must be designed in from
@@ -139,22 +158,25 @@ Your final recommendation must be one of: GO, HOLD, or PASS.
 """.strip()
 
 
-def ethicist(url: str, wishlist_content: str) -> str:
-    """The Ethicist evaluates a tool for values alignment and community impact."""
-    return _query_persona(ETHICIST_PROMPT, url, wishlist_content)
+def murray(url: str, wishlist_content: str) -> str:
+    """Murray (ethicist) evaluates a tool for values alignment and community impact."""
+    return _query_persona(MURRAY_PROMPT, url, wishlist_content)
 
 
 # ---------------------------------------------------------------------------
-# Persona 3 — The Builder
+# Rustin (builder) — was The Builder
 # ---------------------------------------------------------------------------
 
-BUILDER_PROMPT = """
-You are The Builder — a pragmatic, deployment-focused advisor to BLKOUT Creative Ltd,
-a Black queer community benefit society run by a small team building digital capabilities
-on a Coolify-managed VPS.
+RUSTIN_PROMPT = """
+You are Rustin — the builder on the Dreamcatcher council, named for Bayard Rustin:
+the organiser behind the 1963 March on Washington, the person who knew that
+movements are made of logistics. You are a pragmatic, deployment-focused advisor
+to BLKOUT Creative Ltd, a Black queer community benefit society run by a small
+team building digital capabilities on a Coolify-managed VPS.
 
-Your job is to evaluate whether a tool is actually buildable and maintainable in
-BLKOUT's real-world context. You think about:
+Your politics in one line: a beautiful idea that doesn't ship is a beautiful idea
+on a shelf. Your job is to evaluate whether a tool is actually buildable and
+maintainable in BLKOUT's real-world context. You think about:
 
 - VIBE-CODEABILITY: Can someone with moderate technical skills ship this without
   getting lost? Is the DX (developer experience) humane? Is the documentation good?
@@ -178,20 +200,21 @@ Your final recommendation must be one of: GO, HOLD, or PASS.
 """.strip()
 
 
-def builder(url: str, wishlist_content: str) -> str:
-    """The Builder evaluates a tool for deployability and stack fit."""
-    return _query_persona(BUILDER_PROMPT, url, wishlist_content)
+def rustin(url: str, wishlist_content: str) -> str:
+    """Rustin (builder) evaluates a tool for deployability and stack fit."""
+    return _query_persona(RUSTIN_PROMPT, url, wishlist_content)
 
 
 # ---------------------------------------------------------------------------
-# Persona 4 — Sylvia (the judge of reach)
+# Rivera (inclusion) — was Sylvia
 # ---------------------------------------------------------------------------
 
-SYLVIA_PROMPT = """
-You are Sylvia — named for Sylvia Rivera, co-founder of STAR (Street Transvestite
-Action Revolutionaries), who built shelter and political voice for the people
-other movements abandoned: homeless trans youth, sex workers, trans people of colour,
-those who could never have passed as respectable.
+RIVERA_PROMPT = """
+You are Rivera — the inclusion judge on the Dreamcatcher council, named for Sylvia
+Rivera, co-founder of STAR (Street Transvestite Action Revolutionaries), who built
+shelter and political voice for the people other movements abandoned: homeless trans
+youth, sex workers, trans people of colour, those who could never have passed as
+respectable.
 
 Her politics, in one line: movements build themselves for the over-served — the
 respectable, the visible, the already-in-the-room — and leave everyone else on
@@ -240,16 +263,65 @@ under-served.
 """.strip()
 
 
-def sylvia(url: str, wishlist_content: str, submitter_org: str | None = None) -> str:
-    """Sylvia evaluates a tool for reach to the under-served."""
-    context = SYLVIA_PROMPT
+def rivera(url: str, wishlist_content: str, submitter_org: str | None = None) -> str:
+    """Rivera (inclusion) evaluates a tool for reach to the under-served."""
+    context = RIVERA_PROMPT
     if submitter_org:
         context = (
-            SYLVIA_PROMPT
+            RIVERA_PROMPT
             + f"\n\nThe submitting organisation is: {submitter_org}. "
             "Use that context when asking your reach questions."
         )
     return _query_persona(context, url, wishlist_content)
+
+
+# ---------------------------------------------------------------------------
+# Newton (collaborator) — Phase 3 scaffold
+# ---------------------------------------------------------------------------
+# Newton is the collaborator on the council, named for Huey P. Newton —
+# co-founder of the Black Panther Party, author of the Ten-Point Program,
+# theorist of survival programmes as political education. Where Baldwin /
+# Murray / Rustin / Rivera read a tool against one organisation's situation,
+# Newton reads across the corpus of partner submissions and surfaces the
+# co-build opportunity: when three or more orgs ask similar questions of
+# similar tools, the answer is often a shared build, not four parallel ones.
+#
+# Newton therefore does NOT sit in the per-URL evaluation loop. The function
+# below is a placeholder so the wiring is obvious; Phase 3 will replace it
+# with a corpus-aware implementation that runs on a different cadence and
+# returns a different shape (clusters of related submissions + co-build
+# recommendations), backed by the newton_response / newton_recommendation
+# columns added in migrations/002_rename_judges_to_surnames.sql.
+
+NEWTON_PROMPT = """
+You are Newton — the collaborator on the Dreamcatcher council, named for Huey P.
+Newton: co-founder of the Black Panther Party, who taught us that survival
+programmes are the political education and that solidarity is built by doing,
+together, the work that the system would have us do alone.
+
+You do not evaluate single tools. You read across the corpus of submissions
+from BLKOUT and its partner organisations and look for the moment when the
+same question shows up three or more times. When it does, you name the
+co-build opportunity plainly: which orgs share the question, what shape a
+shared answer would take, and who already has half of the work in flight.
+
+[PHASE 3 — implementation pending. This prompt is scaffold only.]
+""".strip()
+
+
+def newton_stub_unwired(corpus: list[dict]) -> dict:
+    """
+    Phase 3 placeholder. Real implementation will:
+
+      - read the most recent N partner submissions from dreamcatcher_verdicts
+      - cluster by tool category / wishlist item / underlying question
+      - surface clusters of size >= 3 as co-build candidates
+      - call the LLM with NEWTON_PROMPT + the cluster summary
+      - persist newton_response / newton_recommendation per submission
+
+    Not called from the per-URL /evaluate flow.
+    """
+    raise NotImplementedError("Newton is Phase 3 — not yet wired.")
 
 
 # ---------------------------------------------------------------------------
@@ -274,21 +346,21 @@ def extract_recommendation(response: str) -> str:
 
 def derive_verdict(
     recommendations: list[str],
-    sylvia_recommendation: str | None = None,
+    rivera_recommendation: str | None = None,
 ) -> str:
     """
-    Four-voice council with Sylvia's standing veto on GO.
+    Four-voice council with Rivera's standing veto on GO.
 
-    - Sylvia says PASS on a tool the others would pass → verdict drops to HOLD
+    - Rivera says PASS on a tool the others would pass → verdict drops to HOLD
       (tool may serve the over-served; redesign before catching).
     - 3+ voices say GO → GO
     - 3+ voices say PASS → PASS
     - Anything else → HOLD.
 
-    For backward compatibility, if sylvia_recommendation is None this falls back
+    For backward compatibility, if rivera_recommendation is None this falls back
     to the three-voice majority logic.
     """
-    if sylvia_recommendation is None:
+    if rivera_recommendation is None:
         go_count = recommendations.count("GO")
         pass_count = recommendations.count("PASS")
         if go_count >= 2:
@@ -297,7 +369,7 @@ def derive_verdict(
             return "PASS"
         return "HOLD"
 
-    all_recs = [*recommendations, sylvia_recommendation]
+    all_recs = [*recommendations, rivera_recommendation]
     go_count = all_recs.count("GO")
     pass_count = all_recs.count("PASS")
 
@@ -309,8 +381,8 @@ def derive_verdict(
     else:
         provisional = "HOLD"
 
-    # Sylvia's veto: she can block a GO verdict.
-    if provisional == "GO" and sylvia_recommendation == "PASS":
+    # Rivera's veto: she can block a GO verdict.
+    if provisional == "GO" and rivera_recommendation == "PASS":
         return "HOLD"
 
     return provisional

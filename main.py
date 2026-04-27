@@ -28,12 +28,12 @@ load_dotenv()
 
 from council import (
     COUNCIL_MODEL,
-    builder,
+    baldwin,
     derive_verdict,
-    ethicist,
     extract_recommendation,
-    skeptic,
-    sylvia,
+    murray,
+    rivera,
+    rustin,
 )
 from verdicts import (
     get_verdict,
@@ -216,14 +216,14 @@ class EvaluateResponse(BaseModel):
     url: str
     submitted_by: str
     submitter_org: str
-    skeptic: str
-    ethicist: str
-    builder: str
-    sylvia: str
-    skeptic_recommendation: str
-    ethicist_recommendation: str
-    builder_recommendation: str
-    sylvia_recommendation: str
+    baldwin: str
+    murray: str
+    rustin: str
+    rivera: str
+    baldwin_recommendation: str
+    murray_recommendation: str
+    rustin_recommendation: str
+    rivera_recommendation: str
     verdict: str
 
 
@@ -264,15 +264,15 @@ async def evaluate(request: EvaluateRequest):
 
     try:
         (
-            skeptic_response,
-            ethicist_response,
-            builder_response,
-            sylvia_response,
+            baldwin_response,
+            murray_response,
+            rustin_response,
+            rivera_response,
         ) = await asyncio.gather(
-            asyncio.to_thread(skeptic, url_str, content),
-            asyncio.to_thread(ethicist, url_str, content),
-            asyncio.to_thread(builder, url_str, content),
-            asyncio.to_thread(sylvia, url_str, content, submitter_org),
+            asyncio.to_thread(baldwin, url_str, content),
+            asyncio.to_thread(murray, url_str, content),
+            asyncio.to_thread(rustin, url_str, content),
+            asyncio.to_thread(rivera, url_str, content, submitter_org),
         )
     except Exception as exc:
         raise HTTPException(
@@ -280,13 +280,13 @@ async def evaluate(request: EvaluateRequest):
             detail=f"Council member failed to respond: {exc}",
         ) from exc
 
-    skeptic_rec = extract_recommendation(skeptic_response)
-    ethicist_rec = extract_recommendation(ethicist_response)
-    builder_rec = extract_recommendation(builder_response)
-    sylvia_rec = extract_recommendation(sylvia_response)
+    baldwin_rec = extract_recommendation(baldwin_response)
+    murray_rec = extract_recommendation(murray_response)
+    rustin_rec = extract_recommendation(rustin_response)
+    rivera_rec = extract_recommendation(rivera_response)
     verdict = derive_verdict(
-        [skeptic_rec, ethicist_rec, builder_rec],
-        sylvia_recommendation=sylvia_rec,
+        [baldwin_rec, murray_rec, rustin_rec],
+        rivera_recommendation=rivera_rec,
     )
 
     try:
@@ -294,14 +294,14 @@ async def evaluate(request: EvaluateRequest):
             url=url_str,
             submitted_by=submitted_by,
             submitter_org=submitter_org,
-            skeptic_response=skeptic_response,
-            ethicist_response=ethicist_response,
-            builder_response=builder_response,
-            sylvia_response=sylvia_response,
-            skeptic_recommendation=skeptic_rec,
-            ethicist_recommendation=ethicist_rec,
-            builder_recommendation=builder_rec,
-            sylvia_recommendation=sylvia_rec,
+            baldwin_response=baldwin_response,
+            murray_response=murray_response,
+            rustin_response=rustin_response,
+            rivera_response=rivera_response,
+            baldwin_recommendation=baldwin_rec,
+            murray_recommendation=murray_rec,
+            rustin_recommendation=rustin_rec,
+            rivera_recommendation=rivera_rec,
             verdict=verdict,
             wishlist_snapshot=content,
             wishlist_updated_at=wishlist.updated_at,
@@ -316,14 +316,14 @@ async def evaluate(request: EvaluateRequest):
             url=url_str,
             submitted_by=submitted_by,
             submitter_org=submitter_org,
-            skeptic=skeptic_response,
-            ethicist=ethicist_response,
-            builder=builder_response,
-            sylvia=sylvia_response,
-            skeptic_recommendation=skeptic_rec,
-            ethicist_recommendation=ethicist_rec,
-            builder_recommendation=builder_rec,
-            sylvia_recommendation=sylvia_rec,
+            baldwin=baldwin_response,
+            murray=murray_response,
+            rustin=rustin_response,
+            rivera=rivera_response,
+            baldwin_recommendation=baldwin_rec,
+            murray_recommendation=murray_rec,
+            rustin_recommendation=rustin_rec,
+            rivera_recommendation=rivera_rec,
             verdict=verdict,
         )
 
@@ -332,14 +332,14 @@ async def evaluate(request: EvaluateRequest):
         url=url_str,
         submitted_by=submitted_by,
         submitter_org=submitter_org,
-        skeptic=skeptic_response,
-        ethicist=ethicist_response,
-        builder=builder_response,
-        sylvia=sylvia_response,
-        skeptic_recommendation=skeptic_rec,
-        ethicist_recommendation=ethicist_rec,
-        builder_recommendation=builder_rec,
-        sylvia_recommendation=sylvia_rec,
+        baldwin=baldwin_response,
+        murray=murray_response,
+        rustin=rustin_response,
+        rivera=rivera_response,
+        baldwin_recommendation=baldwin_rec,
+        murray_recommendation=murray_rec,
+        rustin_recommendation=rustin_rec,
+        rivera_recommendation=rivera_rec,
         verdict=verdict,
     )
 

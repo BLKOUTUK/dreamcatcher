@@ -19,13 +19,13 @@
       {% elif verdict.verdict == 'HOLD' %}
         <div class="bg-cream-muted text-obsidian display-xl text-5xl px-8 py-4">HOLD</div>
       {% else %}
-        <div class="bg-skeptic text-obsidian display-xl text-5xl px-8 py-4">PASS</div>
+        <div class="bg-baldwin text-obsidian display-xl text-5xl px-8 py-4">PASS</div>
       {% endif %}
       <p class="serif-soft text-lg max-w-md">
         {% if verdict.verdict == 'GO' %}
-          three or more voices said yes, and sylvia was not blocking. the council invited this in.
+          three or more voices said yes, and rivera was not blocking. the council invited this in.
         {% elif verdict.verdict == 'HOLD' %}
-          the voices disagreed — or sylvia asked for redesign before adoption. held for more information, or wider reach.
+          the voices disagreed — or rivera asked for redesign before adoption. held for more information, or wider reach.
         {% else %}
           three or more voices said no. release without guilt.
         {% endif %}
@@ -33,7 +33,7 @@
     </div>
 
     <div class="mt-8 font-mono text-xs uppercase tracking-widest text-cream-muted">
-      <span class="text-gold">submitted by</span> &nbsp; {{ verdict.submitted_by or 'anonymous' }}{% if verdict.submitter_org %} &nbsp;·&nbsp; <span class="text-sylvia">{{ verdict.submitter_org }}</span>{% endif %}
+      <span class="text-gold">submitted by</span> &nbsp; {{ verdict.submitted_by or 'anonymous' }}{% if verdict.submitter_org %} &nbsp;·&nbsp; <span class="text-rivera">{{ verdict.submitter_org }}</span>{% endif %}
       {% if verdict.council_model %}
         &nbsp;·&nbsp; <span class="text-gold">model</span> &nbsp; {{ verdict.council_model }}
       {% endif %}
@@ -53,74 +53,87 @@
   <h2 class="display-xl text-4xl md:text-5xl text-cream mb-12">What the Council said</h2>
 
   <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
-    <!-- Skeptic -->
+    <!-- Baldwin -->
     <article class="relative">
-      <div class="absolute left-0 top-0 h-1 w-20 bg-skeptic"></div>
-      <p class="font-mono text-xs uppercase tracking-[0.25em] text-skeptic mt-4">// persona 01</p>
+      <div class="absolute left-0 top-0 h-1 w-20 bg-baldwin"></div>
+      <p class="font-mono text-xs uppercase tracking-[0.25em] text-baldwin mt-4">// 01 · critic</p>
       <div class="flex items-baseline justify-between mt-2 mb-3">
-        <h3 class="display-xl text-2xl text-cream">The Skeptic</h3>
+        <h3 class="display-xl text-2xl text-cream">Baldwin</h3>
         <span class="tag
-          {% if verdict.skeptic_recommendation == 'GO' %}bg-gold text-obsidian{% elif verdict.skeptic_recommendation == 'PASS' %}text-skeptic border-skeptic/60{% endif %}">
-          {{ verdict.skeptic_recommendation|lower }}
+          {% if verdict.baldwin_recommendation == 'GO' %}bg-gold text-obsidian{% elif verdict.baldwin_recommendation == 'PASS' %}text-baldwin border-baldwin/60{% endif %}">
+          {{ verdict.baldwin_recommendation|lower }}
         </span>
       </div>
-      <p class="serif-soft text-sm mb-5">technical risk, lock-in, sequencing.</p>
-      <div class="text-cream-muted font-body text-sm leading-relaxed whitespace-pre-wrap">{{ verdict.skeptic_response }}</div>
+      <p class="serif-soft text-sm mb-5">technical risk, lock-in, sequencing — the master's tools.</p>
+      <div class="text-cream-muted font-body text-sm leading-relaxed whitespace-pre-wrap">{{ verdict.baldwin_response }}</div>
     </article>
 
-    <!-- Ethicist -->
+    <!-- Murray -->
     <article class="relative">
-      <div class="absolute left-0 top-0 h-1 w-20 bg-ethicist"></div>
-      <p class="font-mono text-xs uppercase tracking-[0.25em] text-ethicist mt-4">// persona 02</p>
+      <div class="absolute left-0 top-0 h-1 w-20 bg-murray"></div>
+      <p class="font-mono text-xs uppercase tracking-[0.25em] text-murray mt-4">// 02 · ethicist</p>
       <div class="flex items-baseline justify-between mt-2 mb-3">
-        <h3 class="display-xl text-2xl text-cream">The Ethicist</h3>
+        <h3 class="display-xl text-2xl text-cream">Murray</h3>
         <span class="tag
-          {% if verdict.ethicist_recommendation == 'GO' %}bg-gold text-obsidian{% elif verdict.ethicist_recommendation == 'PASS' %}text-skeptic border-skeptic/60{% endif %}">
-          {{ verdict.ethicist_recommendation|lower }}
+          {% if verdict.murray_recommendation == 'GO' %}bg-gold text-obsidian{% elif verdict.murray_recommendation == 'PASS' %}text-baldwin border-baldwin/60{% endif %}">
+          {{ verdict.murray_recommendation|lower }}
         </span>
       </div>
       <p class="serif-soft text-sm mb-5">values, sovereignty, community benefit.</p>
-      <div class="text-cream-muted font-body text-sm leading-relaxed whitespace-pre-wrap">{{ verdict.ethicist_response }}</div>
+      <div class="text-cream-muted font-body text-sm leading-relaxed whitespace-pre-wrap">{{ verdict.murray_response }}</div>
     </article>
 
-    <!-- Builder -->
+    <!-- Rustin -->
     <article class="relative">
-      <div class="absolute left-0 top-0 h-1 w-20 bg-builder"></div>
-      <p class="font-mono text-xs uppercase tracking-[0.25em] text-builder mt-4">// persona 03</p>
+      <div class="absolute left-0 top-0 h-1 w-20 bg-rustin"></div>
+      <p class="font-mono text-xs uppercase tracking-[0.25em] text-rustin mt-4">// 03 · builder</p>
       <div class="flex items-baseline justify-between mt-2 mb-3">
-        <h3 class="display-xl text-2xl text-cream">The Builder</h3>
+        <h3 class="display-xl text-2xl text-cream">Rustin</h3>
         <span class="tag
-          {% if verdict.builder_recommendation == 'GO' %}bg-gold text-obsidian{% elif verdict.builder_recommendation == 'PASS' %}text-skeptic border-skeptic/60{% endif %}">
-          {{ verdict.builder_recommendation|lower }}
+          {% if verdict.rustin_recommendation == 'GO' %}bg-gold text-obsidian{% elif verdict.rustin_recommendation == 'PASS' %}text-baldwin border-baldwin/60{% endif %}">
+          {{ verdict.rustin_recommendation|lower }}
         </span>
       </div>
-      <p class="serif-soft text-sm mb-5">vibe-codeability, stack fit, lift.</p>
-      <div class="text-cream-muted font-body text-sm leading-relaxed whitespace-pre-wrap">{{ verdict.builder_response }}</div>
+      <p class="serif-soft text-sm mb-5">vibe-codeability, stack fit, lift — what'll actually ship.</p>
+      <div class="text-cream-muted font-body text-sm leading-relaxed whitespace-pre-wrap">{{ verdict.rustin_response }}</div>
     </article>
 
-    <!-- Sylvia -->
+    <!-- Rivera -->
     <article class="relative">
-      <div class="absolute left-0 top-0 h-1 w-20 bg-sylvia"></div>
-      <p class="font-mono text-xs uppercase tracking-[0.25em] text-sylvia mt-4">// persona 04</p>
+      <div class="absolute left-0 top-0 h-1 w-20 bg-rivera"></div>
+      <p class="font-mono text-xs uppercase tracking-[0.25em] text-rivera mt-4">// 04 · inclusion</p>
       <div class="flex items-baseline justify-between mt-2 mb-3">
-        <h3 class="display-xl text-2xl text-cream">Sylvia</h3>
-        {% if verdict.sylvia_recommendation %}
+        <h3 class="display-xl text-2xl text-cream">Rivera</h3>
+        {% if verdict.rivera_recommendation %}
         <span class="tag
-          {% if verdict.sylvia_recommendation == 'GO' %}bg-gold text-obsidian{% elif verdict.sylvia_recommendation == 'PASS' %}text-sylvia border-sylvia/60{% else %}text-sylvia border-sylvia/40{% endif %}">
-          {{ verdict.sylvia_recommendation|lower }}
+          {% if verdict.rivera_recommendation == 'GO' %}bg-gold text-obsidian{% elif verdict.rivera_recommendation == 'PASS' %}text-rivera border-rivera/60{% else %}text-rivera border-rivera/40{% endif %}">
+          {{ verdict.rivera_recommendation|lower }}
         </span>
         {% endif %}
       </div>
       <p class="serif-soft text-sm mb-5">reach, the under-served, who's on the street.</p>
-      {% if verdict.sylvia_response %}
-        <div class="text-cream-muted font-body text-sm leading-relaxed whitespace-pre-wrap">{{ verdict.sylvia_response }}</div>
+      {% if verdict.rivera_response %}
+        <div class="text-cream-muted font-body text-sm leading-relaxed whitespace-pre-wrap">{{ verdict.rivera_response }}</div>
       {% else %}
         <div class="text-cream-muted/60 font-body text-sm leading-relaxed italic">
-          sylvia was not on the council when this verdict was recorded.
+          rivera was not on the council when this verdict was recorded.
         </div>
       {% endif %}
     </article>
   </div>
+
+  {% if verdict.newton_response %}
+  <!-- Newton (Phase 3) — only renders when present -->
+  <div class="mt-12 border-2 border-newton/40 p-6 bg-abyss/40">
+    <p class="font-mono text-[11px] uppercase tracking-[0.3em] text-newton">// 05 · collaborator · cross-corpus</p>
+    <h3 class="display-xl text-2xl text-cream mt-2">Newton</h3>
+    <p class="serif-soft text-sm text-cream-muted mt-1">co-build opportunity surfaced from the corpus.</p>
+    <div class="text-cream-muted font-body text-sm leading-relaxed whitespace-pre-wrap mt-4">{{ verdict.newton_response }}</div>
+    {% if verdict.newton_recommendation %}
+    <p class="font-mono text-[11px] uppercase tracking-[0.3em] text-newton mt-3">recommendation: {{ verdict.newton_recommendation|lower }}</p>
+    {% endif %}
+  </div>
+  {% endif %}
 </section>
 
 <!-- WISHLIST SNAPSHOT --------------------------------------- -->

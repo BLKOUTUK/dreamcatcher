@@ -31,9 +31,9 @@
         <p class="font-mono text-xs uppercase tracking-widest text-cream-muted group-hover:text-obsidian">hold</p>
         <p class="display-xl text-4xl text-cream group-hover:text-obsidian mt-1">{{ counts.HOLD }}</p>
       </a>
-      <a href="/verdicts?verdict=PASS" class="block border-4 border-skeptic/60 p-4 hover:bg-skeptic hover:text-obsidian transition-colors group">
-        <p class="font-mono text-xs uppercase tracking-widest text-skeptic group-hover:text-obsidian">pass</p>
-        <p class="display-xl text-4xl text-skeptic group-hover:text-obsidian mt-1">{{ counts.PASS }}</p>
+      <a href="/verdicts?verdict=PASS" class="block border-4 border-baldwin/60 p-4 hover:bg-baldwin hover:text-obsidian transition-colors group">
+        <p class="font-mono text-xs uppercase tracking-widest text-baldwin group-hover:text-obsidian">pass</p>
+        <p class="display-xl text-4xl text-baldwin group-hover:text-obsidian mt-1">{{ counts.PASS }}</p>
       </a>
     </div>
   </div>
@@ -57,7 +57,7 @@
       hold
     </a>
     <a href="/verdicts?verdict=PASS"
-       class="px-4 py-2 border border-skeptic/60 {% if filter == 'PASS' %}bg-skeptic text-obsidian{% else %}text-skeptic hover:bg-skeptic/20{% endif %}">
+       class="px-4 py-2 border border-baldwin/60 {% if filter == 'PASS' %}bg-baldwin text-obsidian{% else %}text-baldwin hover:bg-baldwin/20{% endif %}">
       pass
     </a>
   </div>
@@ -89,7 +89,7 @@
             hold
           </div>
         {% else %}
-          <div class="absolute -top-4 -right-4 bg-skeptic text-obsidian font-display font-black uppercase tracking-widest text-xs px-4 py-2">
+          <div class="absolute -top-4 -right-4 bg-baldwin text-obsidian font-display font-black uppercase tracking-widest text-xs px-4 py-2">
             pass
           </div>
         {% endif %}
@@ -103,18 +103,18 @@
         </h3>
 
         <div class="flex gap-2 flex-wrap mt-4">
-          <span class="tag {% if v.skeptic_recommendation == 'GO' %}bg-gold text-obsidian{% elif v.skeptic_recommendation == 'PASS' %}text-skeptic border-skeptic/60{% endif %}">
-            skeptic: {{ v.skeptic_recommendation|lower }}
+          <span class="tag {% if v.baldwin_recommendation == 'GO' %}bg-gold text-obsidian{% elif v.baldwin_recommendation == 'PASS' %}text-baldwin border-baldwin/60{% endif %}">
+            baldwin: {{ v.baldwin_recommendation|lower }}
           </span>
-          <span class="tag {% if v.ethicist_recommendation == 'GO' %}bg-gold text-obsidian{% elif v.ethicist_recommendation == 'PASS' %}text-skeptic border-skeptic/60{% endif %}">
-            ethicist: {{ v.ethicist_recommendation|lower }}
+          <span class="tag {% if v.murray_recommendation == 'GO' %}bg-gold text-obsidian{% elif v.murray_recommendation == 'PASS' %}text-baldwin border-baldwin/60{% endif %}">
+            murray: {{ v.murray_recommendation|lower }}
           </span>
-          <span class="tag {% if v.builder_recommendation == 'GO' %}bg-gold text-obsidian{% elif v.builder_recommendation == 'PASS' %}text-skeptic border-skeptic/60{% endif %}">
-            builder: {{ v.builder_recommendation|lower }}
+          <span class="tag {% if v.rustin_recommendation == 'GO' %}bg-gold text-obsidian{% elif v.rustin_recommendation == 'PASS' %}text-baldwin border-baldwin/60{% endif %}">
+            rustin: {{ v.rustin_recommendation|lower }}
           </span>
-          {% if v.sylvia_recommendation %}
-          <span class="tag {% if v.sylvia_recommendation == 'GO' %}bg-gold text-obsidian{% elif v.sylvia_recommendation == 'PASS' %}text-sylvia border-sylvia/60{% else %}text-sylvia border-sylvia/40{% endif %}">
-            sylvia: {{ v.sylvia_recommendation|lower }}
+          {% if v.rivera_recommendation %}
+          <span class="tag {% if v.rivera_recommendation == 'GO' %}bg-gold text-obsidian{% elif v.rivera_recommendation == 'PASS' %}text-rivera border-rivera/60{% else %}text-rivera border-rivera/40{% endif %}">
+            rivera: {{ v.rivera_recommendation|lower }}
           </span>
           {% endif %}
         </div>
@@ -122,7 +122,7 @@
         <div class="mt-5 pt-4 border-t border-gold/20">
           <p class="font-mono text-[10px] uppercase tracking-widest text-cream-muted">
             <span class="text-gold">submitted by</span>
-            {{ v.submitted_by or 'anonymous' }}{% if v.submitter_org %} &nbsp;·&nbsp; <span class="text-sylvia">{{ v.submitter_org }}</span>{% endif %}
+            {{ v.submitted_by or 'anonymous' }}{% if v.submitter_org %} &nbsp;·&nbsp; <span class="text-rivera">{{ v.submitter_org }}</span>{% endif %}
           </p>
         </div>
       </a>
