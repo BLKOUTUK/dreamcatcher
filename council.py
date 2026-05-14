@@ -19,6 +19,7 @@ when the document changes in the editor UI the council's reasoning changes with 
 """
 
 import os
+import httpx
 from openai import OpenAI
 
 # Dreamcatcher talks to OpenRouter via the OpenAI-compatible SDK.
@@ -56,9 +57,43 @@ on it, say so plainly.
 Your persona instructions follow.
 """
 
+# Cap fetched page content to keep prompt size predictable across 4 parallel judges.
+PAGE_CONTENT_MAX_CHARS = 8000
 
-def _query_persona(system_prompt: str, url: str, wishlist_content: str) -> str:
-    """Send a URL to a persona and return its plain-text evaluation."""
+# Jina Reader returns clean LLM-ready markdown for any URL, including JS-rendered SPAs.
+JINA_READER_BASE = "https://r.jina.ai/"
+
+
+def fetch_page_content(url: str, timeout: float = 30.0) -> str:
+    """
+    Fetch the live page content via Jina Reader so the council evaluates the
+    actual tool, not its training-data memory of the brand. On failure, return
+    a sentinel string so judges can flag that they couldn't see the page.
+    """
+    try:
+        resp = httpx.get(
+            JINA_READER_BASE + url,
+            timeout=timeout,
+            headers={"Accept": "text/plain"},
+            follow_redirects=True,
+        )
+        resp.raise_for_status()
+    except httpx.HTTPError as exc:
+        return f"[FETCH FAILED — could not reach the page via Jina Reader: {exc}]"
+
+    text = resp.text.strip()
+    if len(text) > PAGE_CONTENT_MAX_CHARS:
+        text = text[:PAGE_CONTENT_MAX_CHARS] + "\n\n[... content truncated ...]"
+    return text
+
+
+def _query_persona(
+    system_prompt: str,
+    url: str,
+    page_content: str,
+    wishlist_content: str,
+) -> str:
+    """Send a URL + its fetched page content to a persona and return its evaluation."""
     full_system = CONTEXT_PREFIX.format(wishlist=wishlist_content) + "\n\n" + system_prompt
     response = client.chat.completions.create(
         model=COUNCIL_MODEL,
@@ -68,7 +103,15 @@ def _query_persona(system_prompt: str, url: str, wishlist_content: str) -> str:
             {
                 "role": "user",
                 "content": (
-                    f"Please evaluate the following tool or resource for BLKOUT:\n\n{url}\n\n"
+                    f"Please evaluate the following tool or resource for BLKOUT.\n\n"
+                    f"URL: {url}\n\n"
+                    "The page contents have been fetched and rendered as markdown below. "
+                    "Read them before responding — do NOT fall back on prior knowledge of "
+                    "the brand or assume the tool does what its name suggests. If the "
+                    "fetch failed, say so explicitly and decline to bluff.\n\n"
+                    "===== FETCHED PAGE CONTENT =====\n"
+                    f"{page_content}\n"
+                    "===== END PAGE CONTENT =====\n\n"
                     "Reference specific wishlist items or guardrails in your reasoning where "
                     "they apply — don't speak in generalities if a concrete rule is relevant.\n\n"
                     "End your response with a single recommendation on its own line in this exact format:\n"
@@ -117,9 +160,9 @@ Your final recommendation must be one of: GO, HOLD, or PASS.
 """.strip()
 
 
-def baldwin(url: str, wishlist_content: str) -> str:
+def baldwin(url: str, page_content: str, wishlist_content: str) -> str:
     """Baldwin (critic) evaluates a tool for technical risk and lock-in."""
-    return _query_persona(BALDWIN_PROMPT, url, wishlist_content)
+    return _query_persona(BALDWIN_PROMPT, url, page_content, wishlist_content)
 
 
 # ---------------------------------------------------------------------------
@@ -158,9 +201,9 @@ Your final recommendation must be one of: GO, HOLD, or PASS.
 """.strip()
 
 
-def murray(url: str, wishlist_content: str) -> str:
+def murray(url: str, page_content: str, wishlist_content: str) -> str:
     """Murray (ethicist) evaluates a tool for values alignment and community impact."""
-    return _query_persona(MURRAY_PROMPT, url, wishlist_content)
+    return _query_persona(MURRAY_PROMPT, url, page_content, wishlist_content)
 
 
 # ---------------------------------------------------------------------------
@@ -200,9 +243,9 @@ Your final recommendation must be one of: GO, HOLD, or PASS.
 """.strip()
 
 
-def rustin(url: str, wishlist_content: str) -> str:
+def rustin(url: str, page_content: str, wishlist_content: str) -> str:
     """Rustin (builder) evaluates a tool for deployability and stack fit."""
-    return _query_persona(RUSTIN_PROMPT, url, wishlist_content)
+    return _query_persona(RUSTIN_PROMPT, url, page_content, wishlist_content)
 
 
 # ---------------------------------------------------------------------------
@@ -263,7 +306,12 @@ under-served.
 """.strip()
 
 
-def rivera(url: str, wishlist_content: str, submitter_org: str | None = None) -> str:
+def rivera(
+    url: str,
+    page_content: str,
+    wishlist_content: str,
+    submitter_org: str | None = None,
+) -> str:
     """Rivera (inclusion) evaluates a tool for reach to the under-served."""
     context = RIVERA_PROMPT
     if submitter_org:
@@ -272,7 +320,7 @@ def rivera(url: str, wishlist_content: str, submitter_org: str | None = None) ->
             + f"\n\nThe submitting organisation is: {submitter_org}. "
             "Use that context when asking your reach questions."
         )
-    return _query_persona(context, url, wishlist_content)
+    return _query_persona(context, url, page_content, wishlist_content)
 
 
 # ---------------------------------------------------------------------------

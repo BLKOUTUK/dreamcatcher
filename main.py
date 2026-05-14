@@ -31,6 +31,7 @@ from council import (
     baldwin,
     derive_verdict,
     extract_recommendation,
+    fetch_page_content,
     murray,
     rivera,
     rustin,
@@ -271,6 +272,10 @@ async def evaluate(request: EvaluateRequest):
 
     content = wishlist.content
 
+    # Fetch the page once and share across all four judges, so they evaluate
+    # the actual tool rather than the LLM's training-data memory of the brand.
+    page_content = await asyncio.to_thread(fetch_page_content, url_str)
+
     try:
         (
             baldwin_response,
@@ -278,10 +283,10 @@ async def evaluate(request: EvaluateRequest):
             rustin_response,
             rivera_response,
         ) = await asyncio.gather(
-            asyncio.to_thread(baldwin, url_str, content),
-            asyncio.to_thread(murray, url_str, content),
-            asyncio.to_thread(rustin, url_str, content),
-            asyncio.to_thread(rivera, url_str, content, submitter_org),
+            asyncio.to_thread(baldwin, url_str, page_content, content),
+            asyncio.to_thread(murray, url_str, page_content, content),
+            asyncio.to_thread(rustin, url_str, page_content, content),
+            asyncio.to_thread(rivera, url_str, page_content, content, submitter_org),
         )
     except Exception as exc:
         raise HTTPException(
