@@ -22,7 +22,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl, field_validator
 
 load_dotenv()
 
@@ -197,6 +197,15 @@ class EvaluateRequest(BaseModel):
     url: HttpUrl
     submitted_by: str
     submitter_org: str
+
+    @field_validator("url", mode="before")
+    @classmethod
+    def _add_scheme(cls, v):
+        if isinstance(v, str):
+            v = v.strip()
+            if v and "://" not in v:
+                v = "https://" + v
+        return v
 
     model_config = {
         "json_schema_extra": {
